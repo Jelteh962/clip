@@ -57,7 +57,7 @@ app.post("/api/formats", (req, res) => {
 
   execFile(
     "yt-dlp",
-    ["--dump-json", "--no-playlist", url],
+    [...ytCommonArgs(), "--dump-json", url],
     { timeout: 30000, maxBuffer: 32 * 1024 * 1024 },
     (err, stdout, stderr) => {
       if (err) {
@@ -151,7 +151,7 @@ app.get("/api/download", (req, res) => {
   const outputTemplate = path.join(tmpDir, `${filename}.%(ext)s`);
 
   const args = [
-    "--no-playlist",
+    ...ytCommonArgs(),
     "-f", format_id,
     "--merge-output-format", ext === "mp3" ? "mp3" : "mp4",
     "-o", outputTemplate,
@@ -167,9 +167,11 @@ app.get("/api/download", (req, res) => {
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
-  const child = execFile("yt-dlp", args, { timeout: 300000 }, (err) => {
+  const child = execFile("yt-dlp", args, { timeout: 300000, maxBuffer: 32 * 1024 * 1024 }, (err, _stdout, stderr) => {
     if (err) {
-      res.write(`data: ${JSON.stringify({ type: "error", message: "Download failed." })}\n\n`);
+      const detail = (stderr || err.message || "").toString().trim().split("\n").slice(-3).join(" | ").slice(0, 500);
+      console.error("[yt-dlp] download failed:", detail);
+      res.write(`data: ${JSON.stringify({ type: "error", message: detail || "Download failed." })}\n\n`);
       return res.end();
     }
 
