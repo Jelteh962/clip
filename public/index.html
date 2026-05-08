@@ -1331,11 +1331,10 @@
     slot.innerHTML = '';
 
     if (ADSTERRA_BANNER_KEY) {
-      // ---- Adsterra Banner (Iframe Banner 300x250) ----
-      // Adsterra gives you a snippet that looks like:
-      //   <script>atOptions = {key:'...', format:'iframe', height:250, width:300, params:{}};</script>
-      //   <script src="//www.example.com/<KEY>/invoke.js"></script>
-      // We do the same thing dynamically so it works on every gate cycle.
+      // Adsterra Banner (Iframe Banner 300x250).
+      // Their snippet is two script tags: one defines atOptions, the other
+      // loads invoke.js. We inject the equivalent dynamically so it runs
+      // fresh every gate cycle.
       const wrapper = document.createElement('div');
       wrapper.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;';
       slot.appendChild(wrapper);
