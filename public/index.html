@@ -910,6 +910,64 @@
     .license-msg.success { color: var(--success); }
     .license-msg.error { color: var(--accent); }
 
+    /* ---------- LENGTH LOCK PANEL ---------- */
+    .length-lock {
+      display: none;
+      padding: 28px;
+      background: linear-gradient(160deg, #1A1814 0%, #2C1F12 100%);
+      color: #F4D58D;
+      border-radius: 16px;
+      margin-bottom: 28px;
+      text-align: center;
+      box-shadow: 0 24px 60px -28px rgba(200,57,26,0.35);
+    }
+    .length-lock.visible { display: block; }
+    .length-lock-tag {
+      display: inline-block;
+      padding: 5px 12px;
+      background: rgba(244,213,141,0.15);
+      color: #F4D58D;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .length-lock h3 {
+      font-family: var(--serif);
+      font-size: 30px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .length-lock h3 .it { font-style: italic; color: #F4D58D; }
+    .length-lock p {
+      color: rgba(244,213,141,0.7);
+      font-size: 13px;
+      max-width: 460px;
+      margin: 0 auto 20px;
+      line-height: 1.55;
+    }
+    .length-lock-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .length-lock-cta:hover { background: var(--accent-2); }
+    .length-lock-cta:active { transform: scale(0.99); }
+
     /* ---------- TOP-LEVEL ERROR ---------- */
     .top-error {
       max-width: 720px;
@@ -1097,7 +1155,7 @@
     </div>
     <div class="nav-links">
       <a href="#features">Features</a>
-      <a href="#faq">FAQ</a>
+      <a href="/faq">FAQ</a>
       <span class="nav-badge" id="proBadge" style="display:none">Pro active</span>
       <button class="go-pro-btn" id="goProBtn" type="button" onclick="openProModal()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 9.2 8.6 2 9.5l5.4 4.7L5.8 22 12 18.3 18.2 22l-1.6-7.8L22 9.5l-7.2-.9L12 2z"/></svg>
@@ -1113,7 +1171,7 @@
         <span>Now supports Instagram &amp; TikTok</span>
       </div>
 
-      <h1>Save any video<br/>from <span class="it" id="platformWord">YouTube</span>.</h1>
+      <h1>Download any video<br/>from <span class="it" id="platformWord">YouTube</span>.</h1>
       <p class="lede" id="lede">Paste a link, pick a quality, and save the file. Free up to 720p — go Pro to unlock 1080p+ and skip the ads.</p>
 
       <div class="platform-switch" role="tablist" aria-label="Platform">
@@ -1165,7 +1223,17 @@
       <div class="video-card" id="videoCard">
         <div class="video-meta" id="videoMeta"></div>
 
-        <p class="section-label">Choose format</p>
+        <div class="length-lock" id="lengthLock">
+          <span class="length-lock-tag">⏱ Pro required</span>
+          <h3>This video is over <span class="it">15 minutes</span>.</h3>
+          <p id="lengthLockText">Free downloads are capped at 15 minutes. Go Pro to download videos of any length, in any quality, with zero ads.</p>
+          <button class="length-lock-cta" type="button" onclick="openProModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 9.2 8.6 2 9.5l5.4 4.7L5.8 22 12 18.3 18.2 22l-1.6-7.8L22 9.5l-7.2-.9L12 2z"/></svg>
+            Unlock with Pro — €4/mo
+          </button>
+        </div>
+
+        <p class="section-label" id="formatsLabel">Choose format</p>
         <div class="formats-grid" id="formatsGrid"></div>
 
         <div class="download-section">
@@ -1276,7 +1344,7 @@
 <div class="modal-backdrop" id="adModal">
   <div class="modal ad-modal" role="dialog" aria-modal="true" aria-labelledby="adTitle">
     <div class="ad-header">
-      <span class="ad-step">Ad <strong id="adStep">1</strong> of 2</span>
+      <span class="ad-step">Ad <strong id="adStep">1</strong> of <span id="adTotal">2</span></span>
       <span class="ad-countdown"><span id="adCountdown">15</span>s remaining</span>
     </div>
 
@@ -1409,9 +1477,9 @@
   // Until you swap this in, the "Upgrade" button will alert the user.
   const CHECKOUT_URL = 'https://toolstackr.lemonsqueezy.com/checkout/buy/ed65dcf2-7ba4-4c65-997e-9d54c4d10192';
 
-  // Dev-only sample licenses you can hand out manually before integrating
-  // Lemon Squeezy's License API. Replace with real verification when ready.
-  const VALID_LICENSES = new Set([
+  // Dev keys still accepted locally so testing doesn't require a real purchase.
+  // Real keys are verified server-side against Lemon Squeezy's API.
+  const DEV_LICENSES = new Set([
     'CLIP-PRO-DEV-2024',
     'CLIP-FOUNDER-001'
   ]);
@@ -1439,18 +1507,51 @@
     document.getElementById('proModal').classList.remove('open');
   }
 
-  function activateLicense() {
-    const key = (document.getElementById('licenseInput').value || '').trim().toUpperCase();
+  async function activateLicense() {
+    const raw = (document.getElementById('licenseInput').value || '').trim();
     const msg = document.getElementById('licenseMsg');
-    if (!key) { msg.textContent = 'Enter a license key first.'; msg.className = 'license-msg error'; return; }
-    if (VALID_LICENSES.has(key)) {
+    const btn = document.querySelector('.license-btn');
+
+    if (!raw) {
+      msg.textContent = 'Enter a license key first.';
+      msg.className = 'license-msg error';
+      return;
+    }
+
+    // Dev shortcut — accept the test keys locally so we don't pester the API.
+    if (DEV_LICENSES.has(raw.toUpperCase())) {
       setPro(true);
-      msg.textContent = '✓ Pro activated. Enjoy.';
+      msg.textContent = '✓ Pro activated (dev key). Enjoy.';
       msg.className = 'license-msg success';
       setTimeout(closeProModal, 900);
-    } else {
-      msg.textContent = '✗ Invalid key. Check your purchase email.';
+      return;
+    }
+
+    msg.textContent = 'Verifying with Lemon Squeezy…';
+    msg.className = 'license-msg';
+    if (btn) btn.disabled = true;
+
+    try {
+      const r = await fetch('/api/verify-license', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: raw })
+      });
+      const data = await r.json();
+      if (data.valid) {
+        setPro(true);
+        msg.textContent = '✓ Pro activated. Enjoy.';
+        msg.className = 'license-msg success';
+        setTimeout(closeProModal, 900);
+      } else {
+        msg.textContent = '✗ ' + (data.error || 'Invalid key. Check your purchase email.');
+        msg.className = 'license-msg error';
+      }
+    } catch (e) {
+      msg.textContent = '✗ Couldn’t reach the license server. Try again in a moment.';
       msg.className = 'license-msg error';
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
 
@@ -1476,22 +1577,35 @@
   // Restore Pro state on load
   setPro(isPro());
 
-  // ---------- Ad gate ----------
-  // Number of ads + duration per ad. Tweak as you like.
-  const AD_COUNT = 2;
-  const AD_DURATION = 15; // seconds
+  // ---------- Length gate (Free users limited to 15min) ----------
+  const FREE_MAX_SECONDS = 15 * 60;
+
+  // ---------- Adaptive ad sequence ----------
+  // Returns { count, duration } based on the video length.
+  function adPlanFor(durationSec) {
+    const d = Number(durationSec) || 0;
+    if (d < 5 * 60)  return { count: 2, duration: 15 }; // <5min
+    if (d < 10 * 60) return { count: 2, duration: 30 }; // 5–10min
+    return { count: 3, duration: 30 };                  // 10–15min
+  }
 
   let adTimer = null;
   let adCancelled = false;
 
-  function showAdGate() {
+  function showAdGate(plan) {
+    const AD_COUNT = plan.count;
+    const AD_DURATION = plan.duration;
+
     return new Promise((resolve, reject) => {
       adCancelled = false;
       const modal = document.getElementById('adModal');
       const stepEl = document.getElementById('adStep');
+      const totalEl = document.getElementById('adTotal');
       const countdownEl = document.getElementById('adCountdown');
       const fillEl = document.getElementById('adProgressFill');
       modal.classList.add('open');
+
+      if (totalEl) totalEl.textContent = String(AD_COUNT);
 
       let step = 1;
 
@@ -1500,10 +1614,7 @@
         let remaining = AD_DURATION;
         countdownEl.textContent = String(remaining);
         fillEl.style.width = '0%';
-        // Tiny reflow so the transition kicks in cleanly
         void fillEl.offsetWidth;
-
-        // Refresh the ad slot for this cycle (new ad each time).
         injectAd('adSlot');
 
         adTimer = setInterval(() => {
@@ -1636,9 +1747,31 @@
       </div>
     `;
 
+    const userIsPro = isPro();
+    const dur = Number(data.duration) || 0;
+    const tooLong = !userIsPro && dur > FREE_MAX_SECONDS;
+
+    const lengthLock = document.getElementById('lengthLock');
+    const formatsLabel = document.getElementById('formatsLabel');
+    const downloadSection = document.querySelector('.download-section');
+
+    if (tooLong) {
+      lengthLock.classList.add('visible');
+      formatsLabel.style.display = 'none';
+      document.getElementById('formatsGrid').style.display = 'none';
+      if (downloadSection) downloadSection.style.display = 'none';
+      document.getElementById('videoCard').classList.add('visible');
+      document.getElementById('videoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    } else {
+      lengthLock.classList.remove('visible');
+      formatsLabel.style.display = '';
+      document.getElementById('formatsGrid').style.display = '';
+      if (downloadSection) downloadSection.style.display = '';
+    }
+
     const grid = document.getElementById('formatsGrid');
     grid.innerHTML = '';
-    const userIsPro = isPro();
     data.formats.forEach((f) => {
       const proOnly = isProFormat(f);
       const locked = proOnly && !userIsPro;
@@ -1675,15 +1808,19 @@
   async function startDownload() {
     if (!selectedFormat || !videoData) return;
 
-    // Free users have to watch the ad sequence first. Pro users skip it.
+    // Free users: hard 15-min cap, then ads scaled by length.
     if (!isPro()) {
+      const dur = Number(videoData.duration) || 0;
+      if (dur > FREE_MAX_SECONDS) {
+        openProModal();
+        return;
+      }
       // Fire pop-under during the user's click gesture so it isn't blocked.
       triggerPopUnder();
       try {
-        await showAdGate();
+        await showAdGate(adPlanFor(dur));
       } catch (e) {
-        // User cancelled — bail out silently.
-        return;
+        return; // User cancelled
       }
     }
 

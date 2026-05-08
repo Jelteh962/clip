@@ -150,15 +150,19 @@ app.get("/api/download", (req, res) => {
   const filename = `yt-${Date.now()}`;
   const outputTemplate = path.join(tmpDir, `${filename}.%(ext)s`);
 
+  const isAudio = ext === "mp3";
   const args = [
     ...ytCommonArgs(),
-    "-f", format_id,
-    "--merge-output-format", ext === "mp3" ? "mp3" : "mp4",
+    // For audio, fall back to "best" if the platform has no separate audio
+    // stream (TikTok / Instagram only expose merged streams).
+    "-f", isAudio ? "bestaudio/best" : format_id,
     "-o", outputTemplate,
   ];
 
-  if (ext === "mp3") {
-    args.push("-x", "--audio-format", "mp3");
+  if (isAudio) {
+    args.push("-x", "--audio-format", "mp3", "--audio-quality", "0");
+  } else {
+    args.push("--merge-output-format", "mp4");
   }
 
   args.push(url);
@@ -215,6 +219,53 @@ app.get("/api/file", (req, res) => {
 // Serve the same index for platform routes (SPA-style routing)
 app.get(["/youtube", "/instagram", "/tiktok"], (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// FAQ page
+app.get("/faq", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "faq.html"));
+});
+
+// =============================================================================
+// Lemon Squeezy license verification
+// =============================================================================
+// Validates a license key against LS's public Validate endpoint. No API key
+// required for this call (LS exposes it without auth).
+// Docs: https://docs.lemonsqueezy.com/api/license-api
+// =============================================================================
+app.post("/api/verify-license", async (req, res) => {
+  const key = (req.body && req.body.key ? String(req.body.key) : "").trim();
+  if (!key) return res.json({ valid: false, error: "Missing key" });
+
+  try {
+    const r = await fetch("https://api.lemonsqueezy.com/v1/licenses/validate", {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body: new URLSearchParams({ license_key: key }),
+    });
+    const data = await r.json();
+
+    const ok =
+      r.ok &&
+      data &&
+      data.valid === true &&
+      data.license_key &&
+      ["active", "inactive"].includes(data.license_key.status);
+
+    if (!ok) {
+      console.warn("[license] rejected:", key.slice(0, 8) + "…", data && data.error);
+      return res.json({ valid: false, error: (data && data.error) || "Invalid license" });
+    }
+
+    return res.json({
+      valid: true,
+      status: data.license_key.status,
+      expires_at: data.license_key.expires_at,
+    });
+  } catch (e) {
+    console.error("[license] verify failed:", e.message);
+    res.status(500).json({ valid: false, error: "Verification service unreachable" });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

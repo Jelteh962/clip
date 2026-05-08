@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clip — FAQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F4F1EC; --bg-2: #EDE7DC; --surface: #fff; --border: #D8D4CC;
+      --text: #1A1814; --muted: #8A8680; --accent: #C8391A; --accent-2: #E5613A;
+      --accent-light: #F5EAE7; --success: #2D6A4F;
+      --mono: 'DM Mono', monospace; --serif: 'Instrument Serif', serif; --sans: 'Inter', system-ui, sans-serif;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000; opacity: 0.5;
+    }
+
+    .page {
+      position: relative;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 0 28px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 0;
+    }
+    .logo { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
+    .logo-text { font-family: var(--serif); font-size: 32px; font-style: italic; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+    .logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } }
+    .nav-links { display: flex; align-items: center; gap: 24px; font-size: 13px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--text); }
+
+    header.hero {
+      padding: 64px 0 36px;
+      text-align: center;
+    }
+    header.hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(48px, 8vw, 80px);
+      font-weight: 400;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+    header.hero h1 .it { font-style: italic; color: var(--accent); }
+    header.hero p {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+
+    .search {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 6px 6px 6px 18px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 8px 24px -16px rgba(26,24,20,0.18);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(200,57,26,0.10), 0 8px 24px -16px rgba(26,24,20,0.2);
+    }
+    .search svg { color: var(--muted); flex-shrink: 0; }
+    .search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: var(--sans);
+      font-size: 15px;
+      color: var(--text);
+      padding: 12px 0;
+      min-width: 0;
+    }
+    .search input::placeholder { color: var(--muted); }
+    .search-clear {
+      width: 36px; height: 36px;
+      border: none;
+      background: var(--bg-2);
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--muted);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .search-clear.visible { display: flex; }
+    .search-clear:hover { background: var(--border); color: var(--text); }
+
+    main { padding: 48px 0 96px; }
+
+    .faq-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .faq-meta strong { color: var(--text); font-weight: 500; }
+
+    .category {
+      margin-bottom: 36px;
+    }
+    .category-title {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-style: italic;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 14px;
+      padding-left: 6px;
+    }
+
+    .faq-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .faq-item:hover { border-color: rgba(26,24,20,0.25); }
+    .faq-item[open] { border-color: var(--accent); background: linear-gradient(180deg, var(--accent-light) 0%, #fff 80%); }
+
+    .faq-q {
+      padding: 18px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text);
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: color 0.15s;
+    }
+    .faq-q::-webkit-details-marker { display: none; }
+    .faq-q::after {
+      content: '';
+      width: 14px; height: 14px;
+      flex-shrink: 0;
+      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A1814' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>") center/contain no-repeat;
+      transition: transform 0.2s;
+    }
+    .faq-item[open] .faq-q::after { transform: rotate(180deg); }
+
+    .faq-a {
+      padding: 0 22px 20px;
+      color: var(--text);
+      font-size: 14.5px;
+      line-height: 1.65;
+    }
+    .faq-a p { margin-bottom: 10px; }
+    .faq-a p:last-child { margin-bottom: 0; }
+    .faq-a code { font-family: var(--mono); font-size: 12px; background: var(--bg-2); padding: 2px 6px; border-radius: 4px; }
+    .faq-a a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(200,57,26,0.3); }
+    .faq-a a:hover { border-bottom-color: var(--accent); }
+
+    /* Highlight matched search terms */
+    mark { background: rgba(200,57,26,0.18); color: var(--text); padding: 0 2px; border-radius: 2px; }
+
+    .empty {
+      display: none;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+      background: #fff;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+    }
+    .empty.visible { display: block; }
+    .empty h3 { font-family: var(--serif); font-style: italic; font-size: 24px; color: var(--text); margin-bottom: 6px; }
+
+    footer {
+      margin-top: 60px;
+      padding: 24px 0;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 640px) {
+      header.hero { padding: 48px 0 28px; }
+      header.hero p { font-size: 15px; }
+      .nav-links a:not(.active) { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <nav>
+    <a href="/" class="logo">
+      <span class="logo-text">Clip</span>
+      <div class="logo-dot"></div>
+    </a>
+    <div class="nav-links">
+      <a href="/youtube">Download</a>
+      <a href="/faq" class="active">FAQ</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>How can we <span class="it">help</span>?</h1>
+    <p>Quick answers about pricing, downloads, supported sites, and Pro.</p>
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="searchInput" type="text" placeholder="Search the FAQ — try 'mp3' or 'pro'…" autocomplete="off" spellcheck="false"/>
+      <button class="search-clear" id="searchClear" type="button" aria-label="Clear">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="faq-meta">
+      <span><strong id="resultCount">—</strong> question<span id="resultPlural">s</span></span>
+      <a href="mailto:support@clip.app" style="color:inherit;text-decoration:none">support@clip.app →</a>
+    </div>
+
+    <div id="faqList">
+      <!-- Categories rendered by JS -->
+    </div>
+
+    <div class="empty" id="emptyState">
+      <h3>No matches.</h3>
+      <p>Try a different word, or <a href="mailto:support@clip.app" style="color:var(--accent)">email us</a>.</p>
+    </div>
+  </main>
+
+  <footer>
+    <span>Clip v1.1 — Powered by yt-dlp</span>
+    <a href="/youtube">← Back to downloader</a>
+  </footer>
+</div>
+
+<script>
+  const FAQ = [
+    {
+      category: 'Getting started',
+      items: [
+        { q: 'How do I download a video?', a: '<p>Paste the link of any YouTube, Instagram or TikTok video into the input box on the home page, click <strong>Get video</strong>, pick a quality, and hit <strong>Download</strong>. The file lands straight in your Downloads folder.</p>' },
+        { q: 'Which sites are supported?', a: '<p>YouTube, Instagram (Reels, posts, stories) and TikTok. Other platforms aren’t officially supported yet — let us know which ones you want next.</p>' },
+        { q: 'Do I need an account?', a: '<p>No. Free downloads work without signing up. You only enter an email if you upgrade to Pro, since that’s where your license key gets sent.</p>' }
+      ]
+    },
+    {
+      category: 'Free vs Pro',
+      items: [
+        { q: 'What’s the difference between Free and Pro?', a: '<p><strong>Free</strong> gives you up to 720p video, MP3 audio, and a 15-minute length cap, with two short ads before each download.</p><p><strong>Pro</strong> (€4/month) unlocks 1080p, 4K, 60fps and HDR, removes the 15-minute cap, skips every ad, and adds batch playlist downloads.</p>' },
+        { q: 'How do I upgrade to Pro?', a: '<p>Click <strong>Go Pro</strong> in the top-right of the home page, then <strong>Upgrade — €4/mo</strong>. You’ll be taken to a secure Lemon Squeezy checkout. After payment you’ll get an email with your license key — paste it into the same modal under "Already paid?".</p>' },
+        { q: 'Can I cancel any time?', a: '<p>Yes. Manage your subscription from the link in your purchase confirmation email, or email <a href="mailto:support@clip.app">support@clip.app</a>. No fees, no questions.</p>' },
+        { q: 'I lost my license key — can you resend it?', a: '<p>Email <a href="mailto:support@clip.app">support@clip.app</a> from the address you used to buy and we’ll resend it within a day.</p>' }
+      ]
+    },
+    {
+      category: 'Quality & formats',
+      items: [
+        { q: 'Why is 1080p locked for me?', a: '<p>1080p, 1440p and 4K are part of the Pro tier. Free downloads max out at 720p so we can keep the service free for everyone. Upgrade if you need full quality.</p>' },
+        { q: 'How do I download just the audio (MP3)?', a: '<p>After fetching a video, pick the <strong>Audio only (MP3)</strong> tile in the format grid. The file is saved as a regular .mp3 you can play anywhere.</p>' },
+        { q: 'Why is the file an MP4 and not a MOV / WebM?', a: '<p>MP4 is the most universally compatible format — it plays on every device and OS without extra software. We re-package video and audio streams into MP4 automatically.</p>' },
+        { q: 'Can I download a whole playlist?', a: '<p>Batch playlist downloads are a Pro feature. Pro users can paste a playlist or channel URL and queue every video in one go.</p>' }
+      ]
+    },
+    {
+      category: 'Troubleshooting',
+      items: [
+        { q: 'I get "Sign in to confirm you’re not a bot" on YouTube.', a: '<p>YouTube is rate-limiting requests from your network. Wait a few minutes and try again, or try a different video. If it keeps happening, email <a href="mailto:support@clip.app">support@clip.app</a> with the URL.</p>' },
+        { q: 'The download starts but nothing saves.', a: '<p>Check your browser’s Downloads folder — files often arrive without a "saved" notification. If it’s genuinely missing, hard-refresh the page (Ctrl+Shift+R) and retry.</p>' },
+        { q: 'Why are there ads if I’m a paying customer?', a: '<p>You shouldn’t see any. Try clicking <strong>Go Pro</strong> and re-activating your license key. If it persists, log in from a private window — sometimes a browser extension blocks the activation request.</p>' },
+        { q: 'Can I download age-restricted or private videos?', a: '<p>No. We only support content that’s publicly accessible without a sign-in.</p>' }
+      ]
+    },
+    {
+      category: 'Legal',
+      items: [
+        { q: 'Is downloading these videos legal?', a: '<p>It depends on what you download and what you do with it. Downloading content for personal viewing is permitted in many places; redistributing or monetising it is almost never permitted. Always check the platform’s terms and your local copyright law.</p>' },
+        { q: 'Do you store my downloads or my email?', a: '<p>Files are deleted from our servers immediately after they’re sent to you. Email addresses are only used by our payment provider (Lemon Squeezy) to deliver your license key — we don’t sell or share them.</p>' },
+        { q: 'How do I report abuse?', a: '<p>Email <a href="mailto:abuse@clip.app">abuse@clip.app</a> with the URL and a short description.</p>' }
+      ]
+    }
+  ];
+
+  // ---- Render ----
+  const list = document.getElementById('faqList');
+  const empty = document.getElementById('emptyState');
+  const countEl = document.getElementById('resultCount');
+  const pluralEl = document.getElementById('resultPlural');
+  const input = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('searchClear');
+
+  function renderAll() {
+    list.innerHTML = '';
+    let total = 0;
+    FAQ.forEach(cat => {
+      const wrap = document.createElement('section');
+      wrap.className = 'category';
+      wrap.dataset.category = cat.category;
+      wrap.innerHTML = `<h2 class="category-title">${cat.category}</h2>`;
+      cat.items.forEach((it, i) => {
+        const d = document.createElement('details');
+        d.className = 'faq-item';
+        d.dataset.q = it.q.toLowerCase();
+        d.dataset.a = (it.a || '').toLowerCase().replace(/<[^>]+>/g, ' ');
+        d.innerHTML = `<summary class="faq-q"><span class="faq-q-text">${it.q}</span></summary><div class="faq-a">${it.a}</div>`;
+        wrap.appendChild(d);
+        total += 1;
+      });
+      list.appendChild(wrap);
+    });
+    countEl.textContent = String(total);
+    pluralEl.textContent = total === 1 ? '' : 's';
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  function highlight(text, query) {
+    if (!query) return escapeHtml(text);
+    const safe = escapeHtml(text);
+    const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+    return safe.replace(re, '<mark>$1</mark>');
+  }
+
+  function applyFilter() {
+    const q = input.value.trim().toLowerCase();
+    clearBtn.classList.toggle('visible', q.length > 0);
+
+    let visible = 0;
+    document.querySelectorAll('.category').forEach(cat => {
+      let catVisible = 0;
+      cat.querySelectorAll('.faq-item').forEach(item => {
+        const text = item.dataset.q + ' ' + item.dataset.a;
+        const match = !q || text.includes(q);
+        item.style.display = match ? '' : 'none';
+
+        // Highlight + auto-open matched items when searching
+        const titleEl = item.querySelector('.faq-q-text');
+        const original = titleEl.dataset.original || titleEl.textContent;
+        titleEl.dataset.original = original;
+        titleEl.innerHTML = match && q ? highlight(original, q) : escapeHtml(original);
+        if (q && match) item.setAttribute('open', ''); else item.removeAttribute('open');
+
+        if (match) { catVisible += 1; visible += 1; }
+      });
+      cat.style.display = catVisible > 0 ? '' : 'none';
+    });
+
+    countEl.textContent = String(visible);
+    pluralEl.textContent = visible === 1 ? '' : 's';
+    empty.classList.toggle('visible', visible === 0);
+  }
+
+  renderAll();
+  input.addEventListener('input', applyFilter);
+  clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); applyFilter(); });
+
+  // Focus the search bar when "/" is pressed
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '/' && document.activeElement !== input) {
+      e.preventDefault();
+      input.focus();
+    }
+    if (e.key === 'Escape' && document.activeElement === input) {
+      input.value = ''; applyFilter(); input.blur();
+    }
+  });
+</script>
+</body>
+</html>
