@@ -37,10 +37,13 @@ function ytCommonArgs() {
   const args = [
     "--no-playlist",
     "--no-warnings",
-    "--retries", "3",
-    // Prefer Android client first — it sidesteps a lot of YouTube's web bot checks.
-    "--extractor-args", "youtube:player_client=android,web",
-    // Realistic UA helps with Instagram and TikTok specifically.
+    "--retries", "5",
+    "--fragment-retries", "5",
+    "--force-ipv4", // YT's bot scoring is harsher on IPv6 datacenter ranges
+    "--geo-bypass",
+    // tv_embedded + web is the most reliable mix in 2025 — android client
+    // increasingly returns 403 on actual stream URLs even when metadata fetches.
+    "--extractor-args", "youtube:player_client=tv_embedded,web,mweb;youtube:formats=missing_pot",
     "--user-agent",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
   ];
@@ -49,6 +52,17 @@ function ytCommonArgs() {
   }
   return args;
 }
+
+// Health endpoint — useful to verify cookies are wired up after a deploy.
+// Hit https://yourdomain.com/api/health to see status.
+app.get("/api/health", (_req, res) => {
+  res.json({
+    ok: true,
+    cookiesLoaded: COOKIES_AVAILABLE,
+    cookiesPath: COOKIES_AVAILABLE ? COOKIES_PATH : null,
+    nodeVersion: process.version,
+  });
+});
 
 // Get available formats for a video
 app.post("/api/formats", (req, res) => {
