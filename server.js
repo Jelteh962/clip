@@ -8,6 +8,48 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// =============================================================================
+// YouTube cookies bypass
+// =============================================================================
+// YouTube blocks datacenter IPs ("Sign in to confirm you're not a bot").
+// We work around that by passing yt-dlp a cookies file from a logged-in browser
+// session. Set YT_COOKIES_BASE64 in your Railway service variables to a base64
+// blob of a Netscape cookies.txt file. We decode it once at startup.
+// =============================================================================
+const COOKIES_PATH = path.join(os.tmpdir(), "yt-cookies.txt");
+let COOKIES_AVAILABLE = false;
+
+if (process.env.YT_COOKIES_BASE64) {
+  try {
+    fs.writeFileSync(
+      COOKIES_PATH,
+      Buffer.from(process.env.YT_COOKIES_BASE64, "base64").toString("utf8")
+    );
+    COOKIES_AVAILABLE = true;
+    console.log("[clip] YT cookies loaded from env (" + COOKIES_PATH + ")");
+  } catch (e) {
+    console.error("[clip] Failed to decode YT_COOKIES_BASE64:", e.message);
+  }
+}
+
+// Common args we want on every yt-dlp invocation (formats + download).
+function ytCommonArgs() {
+  const args = [
+    "--no-playlist",
+    "--no-warnings",
+    "--retries", "3",
+    // Prefer Android client first — it sidesteps a lot of YouTube's web bot checks.
+    "--extractor-args", "youtube:player_client=android,web",
+    // Realistic UA helps with Instagram and TikTok specifically.
+    "--user-agent",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+  ];
+  if (COOKIES_AVAILABLE) {
+    args.push("--cookies", COOKIES_PATH);
+  }
+  return args;
+}
+
 // Get available formats for a video
 app.post("/api/formats", (req, res) => {
   const { url } = req.body;
