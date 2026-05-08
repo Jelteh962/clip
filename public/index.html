@@ -900,6 +900,22 @@
     .license-msg.success { color: var(--success); }
     .license-msg.error { color: var(--accent); }
 
+    /* ---------- TOP-LEVEL ERROR ---------- */
+    .top-error {
+      max-width: 720px;
+      margin: 0 auto 14px;
+      padding: 14px 18px;
+      background: #FBE7E2;
+      border: 1px solid #E5B5A8;
+      color: #8C2A14;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .top-error strong { display: block; margin-bottom: 4px; font-weight: 600; }
+    .top-error code { font-family: var(--mono); font-size: 11px; background: rgba(140,42,20,0.08); padding: 1px 5px; border-radius: 3px; }
+
     /* ---------- AD GATE ---------- */
     .ad-modal {
       max-width: 640px;
@@ -1105,6 +1121,7 @@
         </button>
       </div>
 
+      <div class="top-error" id="topError" style="display:none"></div>
       <div class="url-card">
         <div class="url-row">
           <div class="url-input-wrap">
@@ -1551,11 +1568,20 @@
     document.getElementById('statusMsg').className = 'status-msg';
   }
 
+  function showTopError(message) {
+    const el = document.getElementById('topError');
+    if (!el) return;
+    if (!message) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    el.style.display = 'block';
+    el.innerHTML = `<strong>Couldn't load video</strong>${message}`;
+  }
+
   async function fetchFormats() {
     const url = document.getElementById('urlInput').value.trim();
     if (!url) return;
 
     selectedFormat = null;
+    showTopError('');
     clearStatus();
     document.getElementById('videoCard').classList.remove('visible');
     document.getElementById('downloadBtn').disabled = true;
@@ -1572,14 +1598,18 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })
       });
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { error: text || 'Server returned non-JSON response.' }; }
 
-      if (!res.ok || data.error) throw new Error(data.error || 'Failed');
+      console.log('[clip] /api/formats', res.status, data);
+      if (!res.ok || data.error) throw new Error(data.error || `Server returned ${res.status}`);
 
       videoData = data;
       renderCard(data);
     } catch (e) {
-      setStatus(e.message || 'Something went wrong.', 'error');
+      console.error('[clip] fetchFormats failed:', e);
+      showTopError(e.message || 'Something went wrong.');
     } finally {
       btn.disabled = false;
       lbl.textContent = 'Get video';

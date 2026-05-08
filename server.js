@@ -16,10 +16,16 @@ app.post("/api/formats", (req, res) => {
   execFile(
     "yt-dlp",
     ["--dump-json", "--no-playlist", url],
-    { timeout: 30000 },
+    { timeout: 30000, maxBuffer: 32 * 1024 * 1024 },
     (err, stdout, stderr) => {
       if (err) {
-        return res.status(400).json({ error: "Could not fetch video info. Check the URL." });
+        // Surface the real yt-dlp message so we can see what's actually wrong
+        // (e.g. YouTube bot challenge, Instagram login wall, network timeout).
+        const detail = (stderr || err.message || "").toString().trim().split("\n").slice(-3).join(" | ").slice(0, 500);
+        console.error("[yt-dlp] formats failed:", detail);
+        return res.status(400).json({
+          error: detail || "Could not fetch video info.",
+        });
       }
       try {
         const info = JSON.parse(stdout);
