@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clip — Download from YouTube, Instagram & TikTok</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F4F1EC;
+      --bg-2: #EDE7DC;
+      --surface: #EDEAE4;
+      --border: #D8D4CC;
+      --text: #1A1814;
+      --muted: #8A8680;
+      --accent: #C8391A;
+      --accent-2: #E5613A;
+      --accent-light: #F5EAE7;
+      --success: #2D6A4F;
+      --yt: #FF0033;
+      --ig-1: #F58529;
+      --ig-2: #DD2A7B;
+      --ig-3: #8134AF;
+      --tt-1: #25F4EE;
+      --tt-2: #FE2C55;
+      --mono: 'DM Mono', monospace;
+      --serif: 'Instrument Serif', serif;
+      --sans: 'Inter', system-ui, sans-serif;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 15px;
+      line-height: 1.6;
+      letter-spacing: -0.01em;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Subtle grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.5;
+    }
+
+    /* Animated halo behind hero */
+    .halo {
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1200px;
+      height: 700px;
+      background:
+        radial-gradient(closest-side at 30% 50%, rgba(200,57,26,0.22), transparent 70%),
+        radial-gradient(closest-side at 70% 60%, rgba(229,97,58,0.22), transparent 70%),
+        radial-gradient(closest-side at 50% 30%, rgba(255,200,120,0.18), transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+      z-index: 0;
+      animation: drift 18s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      0%   { transform: translateX(-50%) translateY(0) rotate(0deg); }
+      100% { transform: translateX(-50%) translateY(20px) rotate(8deg); }
+    }
+
+    .page {
+      position: relative;
+      min-height: 100vh;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 28px;
+      z-index: 1;
+    }
+
+    /* ---------- NAV ---------- */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .logo-text {
+      font-family: var(--serif);
+      font-size: 32px;
+      font-style: italic;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .logo-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(1.4); opacity: 0.7; }
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(45,106,79,0.1);
+      color: var(--success);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .nav-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      padding: 80px 0 56px;
+      text-align: center;
+      position: relative;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px 8px 8px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+      margin-bottom: 28px;
+      box-shadow: 0 1px 0 rgba(26,24,20,0.04);
+    }
+    .eyebrow .chip {
+      background: var(--accent);
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+    }
+
+    .hero h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(56px, 9vw, 116px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 22px;
+    }
+    .hero h1 .it {
+      font-style: italic;
+      color: var(--accent);
+      position: relative;
+      display: inline-block;
+      transition: color 0.4s ease;
+    }
+    .hero h1 .it::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: 6%;
+      height: 14%;
+      background: currentColor;
+      opacity: 0.12;
+      border-radius: 2px;
+      transform-origin: left;
+      animation: underline 1.2s ease-out 0.3s both;
+    }
+    @keyframes underline {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+
+    .hero p.lede {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 36px;
+      line-height: 1.55;
+    }
+
+    /* ---------- PLATFORM SWITCHER ---------- */
+    .platform-switch {
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 24px -12px rgba(26,24,20,0.15);
+    }
+    .platform-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all 0.18s ease;
+      letter-spacing: -0.01em;
+    }
+    .platform-tab:hover { color: var(--text); background: var(--bg-2); }
+    .platform-tab.active {
+      color: #fff;
+      background: var(--text);
+      box-shadow: 0 4px 14px -4px rgba(26,24,20,0.4);
+    }
+    .platform-tab[data-platform="youtube"].active { background: var(--yt); box-shadow: 0 4px 14px -4px rgba(255,0,51,0.45); }
+    .platform-tab[data-platform="instagram"].active {
+      background: linear-gradient(135deg, var(--ig-1), var(--ig-2) 50%, var(--ig-3));
+      box-shadow: 0 4px 14px -4px rgba(221,42,123,0.45);
+    }
+    .platform-tab[data-platform="tiktok"].active {
+      background: var(--text);
+      box-shadow: 0 4px 14px -4px rgba(254,44,85,0.45);
+    }
+    .platform-tab svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ---------- URL FORM ---------- */
+    .url-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.6) inset,
+        0 24px 60px -28px rgba(26,24,20,0.25),
+        0 8px 24px -16px rgba(200,57,26,0.18);
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .url-card:focus-within {
+      border-color: var(--accent);
+      box-shadow:
+        0 0 0 4px rgba(200,57,26,0.10),
+        0 24px 60px -28px rgba(26,24,20,0.3),
+        0 8px 24px -16px rgba(200,57,26,0.25);
+    }
+
+    .url-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .url-input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px 0 16px;
+      min-width: 0;
+    }
+    .url-input-wrap svg { color: var(--muted); flex-shrink: 0; }
+
+    .url-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: var(--sans);
+      font-size: 16px;
+      color: var(--text);
+      padding: 16px 0;
+      min-width: 0;
+      letter-spacing: -0.01em;
+    }
+    .url-input::placeholder { color: var(--muted); }
+
+    .fetch-btn {
+      padding: 16px 26px;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fetch-btn:hover { background: var(--accent); box-shadow: 0 6px 20px -8px rgba(200,57,26,0.5); }
+    .fetch-btn:active { transform: scale(0.98); }
+    .fetch-btn:disabled { opacity: 0.5; cursor: not-allowed; background: var(--text); box-shadow: none; }
+
+    .loading-bar {
+      height: 2px;
+      background: transparent;
+      margin: 0 8px;
+      overflow: hidden;
+      display: none;
+    }
+    .loading-bar.active { display: block; }
+    .loading-bar-inner {
+      height: 100%;
+      width: 30%;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      animation: slide 1.2s ease-in-out infinite;
+    }
+    @keyframes slide {
+      0%   { transform: translateX(-120%); }
+      100% { transform: translateX(420%); }
+    }
+
+    /* ---------- TRUST STRIP ---------- */
+    .trust {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      max-width: 720px;
+      margin: 28px auto 0;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .trust-item {
+      background: var(--bg);
+      padding: 18px 16px;
+      text-align: center;
+    }
+    .trust-num {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 26px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .trust-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ---------- VIDEO RESULT ---------- */
+    main { padding-bottom: 80px; }
+
+    .results { max-width: 720px; margin: 56px auto 0; }
+
+    .video-card {
+      display: none;
+      animation: slideUp 0.4s ease;
+    }
+    .video-card.visible { display: block; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .video-meta {
+      display: flex;
+      gap: 18px;
+      padding: 22px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 12px 30px -20px rgba(26,24,20,0.15);
+    }
+    .video-thumb {
+      width: 128px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+      background: var(--surface);
+    }
+    .video-info { min-width: 0; flex: 1; }
+    .video-title {
+      font-family: var(--serif);
+      font-size: 20px;
+      line-height: 1.3;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .video-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .formats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+    .format-card {
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #fff;
+      position: relative;
+    }
+    .format-card:hover { border-color: var(--text); transform: translateY(-1px); box-shadow: 0 6px 16px -10px rgba(26,24,20,0.2); }
+    .format-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      box-shadow: 0 0 0 3px rgba(200,57,26,0.12);
+    }
+    .format-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .format-res {
+      font-size: 22px;
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+    .format-type {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-family: var(--mono);
+    }
+    .format-size {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-family: var(--mono);
+    }
+
+    .download-section {
+      border-top: 1px solid var(--border);
+      padding-top: 28px;
+    }
+    .download-btn {
+      width: 100%;
+      padding: 18px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 8px 22px -10px rgba(200,57,26,0.5);
+    }
+    .download-btn:hover { background: var(--accent-2); box-shadow: 0 12px 28px -10px rgba(200,57,26,0.6); }
+    .download-btn:active { transform: scale(0.99); }
+    .download-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .progress-wrap { margin-top: 18px; display: none; }
+    .progress-wrap.active { display: block; }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .progress-track { height: 4px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.3s ease; width: 0%; }
+
+    .status-msg {
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--muted);
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-msg.visible { display: flex; }
+    .status-msg.success { color: var(--success); }
+    .status-msg.error { color: var(--accent); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    /* ---------- FEATURES STRIP ---------- */
+    .features {
+      max-width: 980px;
+      margin: 96px auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .feature {
+      padding: 26px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .feature:hover { transform: translateY(-2px); box-shadow: 0 14px 30px -18px rgba(26,24,20,0.2); }
+    .feature-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+    .feature h3 {
+      font-family: var(--serif);
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      font-weight: 400;
+    }
+    .feature p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    footer {
+      margin-top: 96px;
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .note {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* ---------- GO PRO BUTTON ---------- */
+    .go-pro-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: linear-gradient(135deg, #1A1814, #3A2A1A);
+      color: #F4D58D;
+      border: 1px solid rgba(244,213,141,0.25);
+      border-radius: 999px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.15s ease;
+      box-shadow: 0 4px 14px -6px rgba(26,24,20,0.4), 0 0 0 0 rgba(244,213,141,0.3) inset;
+    }
+    .go-pro-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px -8px rgba(26,24,20,0.5); }
+    .go-pro-btn svg { color: #F4D58D; }
+
+    /* ---------- LOCKED FORMAT ---------- */
+    .format-card.locked { opacity: 0.65; }
+    .format-card.locked::after {
+      content: '';
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 18px;
+      height: 18px;
+      background: var(--text);
+      mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='10' width='16' height='11' rx='2'/><path d='M8 10V7a4 4 0 0 1 8 0v3'/></svg>") center/contain no-repeat;
+      -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='10' width='16' height='11' rx='2'/><path d='M8 10V7a4 4 0 0 1 8 0v3'/></svg>") center/contain no-repeat;
+      color: var(--text);
+    }
+    .format-pro-tag {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 7px;
+      background: #1A1814;
+      color: #F4D58D;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ---------- MODAL ---------- */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,24,20,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 2000;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-backdrop.open { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      max-width: 880px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 36px;
+      position: relative;
+      box-shadow: 0 40px 80px -20px rgba(0,0,0,0.4);
+      animation: pop 0.25s cubic-bezier(.2,.8,.2,1);
+    }
+    @keyframes pop { from { transform: scale(0.96) translateY(8px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: var(--bg-2);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      transition: background 0.15s, color 0.15s;
+    }
+    .modal-close:hover { background: var(--border); color: var(--text); }
+
+    .modal h2 {
+      font-family: var(--serif);
+      font-size: 44px;
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .modal h2 .it { font-style: italic; color: var(--accent); }
+    .modal-sub {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 28px;
+      max-width: 520px;
+    }
+
+    .plans {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .plan {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+    }
+    .plan.featured {
+      background: linear-gradient(160deg, #1A1814 0%, #2C1F12 100%);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 24px 60px -28px rgba(200,57,26,0.4);
+    }
+    .plan-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--bg-2);
+      color: var(--muted);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .plan.featured .plan-tag {
+      background: rgba(244,213,141,0.15);
+      color: #F4D58D;
+    }
+    .plan-name {
+      font-family: var(--serif);
+      font-size: 30px;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+      line-height: 1;
+    }
+    .plan-name .it { font-style: italic; color: var(--accent); }
+    .plan.featured .plan-name .it { color: #F4D58D; }
+    .plan-price {
+      display: baseline;
+      margin-bottom: 18px;
+    }
+    .plan-price .num {
+      font-family: var(--serif);
+      font-size: 42px;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+    .plan-price .per {
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+    .plan.featured .plan-price .per { color: rgba(255,255,255,0.55); }
+
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 22px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .plan-features li {
+      font-size: 13.5px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.5;
+    }
+    .plan-features svg { flex-shrink: 0; margin-top: 3px; color: var(--accent); }
+    .plan.featured .plan-features svg { color: #F4D58D; }
+
+    .plan-cta {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: default;
+      text-align: center;
+    }
+    .plan.featured .plan-cta {
+      background: var(--accent);
+      color: #fff;
+      border-color: transparent;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      text-decoration: none;
+      display: block;
+    }
+    .plan.featured .plan-cta:hover { background: var(--accent-2); }
+    .plan.featured .plan-cta:active { transform: scale(0.99); }
+
+    .license-row {
+      margin-top: 10px;
+      padding: 18px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .license-row label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .license-input {
+      flex: 1;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      outline: none;
+      min-width: 0;
+    }
+    .license-input:focus { border-color: var(--accent); }
+    .license-btn {
+      padding: 10px 16px;
+      border: none;
+      background: var(--text);
+      color: #fff;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .license-btn:hover { background: var(--accent); }
+    .license-msg {
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .license-msg.success { color: var(--success); }
+    .license-msg.error { color: var(--accent); }
+
+    /* ---------- AD GATE ---------- */
+    .ad-modal {
+      max-width: 640px;
+      padding: 28px;
+    }
+    .ad-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .ad-step {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .ad-step strong { color: var(--accent); font-weight: 500; }
+
+    .ad-countdown {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-2);
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    .ad-countdown::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .ad-slot {
+      width: 100%;
+      min-height: 280px;
+      background: linear-gradient(135deg, #1A1814 0%, #2C1F12 100%);
+      color: #F4D58D;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .ad-slot::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(closest-side at 30% 30%, rgba(244,213,141,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    .ad-slot-tag {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(244,213,141,0.55);
+    }
+    .ad-slot h3 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 32px;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      line-height: 1.1;
+      font-weight: 400;
+    }
+    .ad-slot p {
+      color: rgba(244,213,141,0.7);
+      font-size: 13px;
+      max-width: 380px;
+    }
+
+    .ad-progress {
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+    .ad-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.3s linear;
+    }
+
+    .ad-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .ad-skip-pro {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: linear-gradient(135deg, #1A1814, #3A2A1A);
+      color: #F4D58D;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.12s ease;
+      text-decoration: none;
+    }
+    .ad-skip-pro:hover { transform: translateY(-1px); }
+    .ad-cancel {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 12px;
+      cursor: pointer;
+      padding: 6px 10px;
+    }
+    .ad-cancel:hover { color: var(--text); }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 720px) {
+      .plans { grid-template-columns: 1fr; }
+      .modal { padding: 24px; }
+      .modal h2 { font-size: 32px; }
+      .license-row { flex-wrap: wrap; }
+      .hero { padding: 56px 0 40px; }
+      .hero p.lede { font-size: 16px; }
+      .platform-tab { padding: 10px 14px; font-size: 12px; }
+      .platform-tab .label { display: none; }
+      .platform-tab svg { width: 18px; height: 18px; }
+      .url-row { flex-direction: column; gap: 8px; }
+      .url-input-wrap { width: 100%; padding: 4px 14px; }
+      .fetch-btn { width: 100%; justify-content: center; }
+      .trust { grid-template-columns: repeat(2, 1fr); }
+      .features { grid-template-columns: 1fr; margin-top: 64px; }
+      .nav-links { gap: 16px; }
+      .nav-links a:not(.nav-badge) { display: none; }
+      .video-thumb { width: 96px; height: 54px; }
+    }
+  </style>
+</head>
+<body>
+<div class="halo"></div>
+
+<div class="page">
+  <nav>
+    <div class="logo">
+      <span class="logo-text">Clip</span>
+      <div class="logo-dot"></div>
+    </div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <span class="nav-badge" id="proBadge" style="display:none">Pro active</span>
+      <button class="go-pro-btn" id="goProBtn" type="button" onclick="openProModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 9.2 8.6 2 9.5l5.4 4.7L5.8 22 12 18.3 18.2 22l-1.6-7.8L22 9.5l-7.2-.9L12 2z"/></svg>
+        Go Pro
+      </button>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">
+        <span class="chip">NEW</span>
+        <span>Now supports Instagram &amp; TikTok</span>
+      </div>
+
+      <h1>Save any video<br/>from <span class="it" id="platformWord">YouTube</span>.</h1>
+      <p class="lede" id="lede">Paste a link, pick a quality, and save the file. Free up to 720p — go Pro to unlock 1080p+ and skip the ads.</p>
+
+      <div class="platform-switch" role="tablist" aria-label="Platform">
+        <button class="platform-tab active" data-platform="youtube" type="button" role="tab" aria-selected="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.2 0 12 0 12s0 3.8.5 5.8a3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1c.5-2 .5-5.8.5-5.8s0-3.8-.5-5.8ZM9.6 15.6V8.4l6.2 3.6-6.2 3.6Z"/></svg>
+          <span class="label">YouTube</span>
+        </button>
+        <button class="platform-tab" data-platform="instagram" type="button" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8a4 4 0 0 1 3.4 3.4Z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
+          <span class="label">Instagram</span>
+        </button>
+        <button class="platform-tab" data-platform="tiktok" type="button" role="tab" aria-selected="false">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 6.7a5.7 5.7 0 0 1-3.4-1.1 5.6 5.6 0 0 1-2.2-3.4h-3.4v13.4a2.7 2.7 0 1 1-2-2.6V9.4a6.1 6.1 0 1 0 5.4 6V9.7a8.9 8.9 0 0 0 5.6 1.9V8.2a5.4 5.4 0 0 1 0-1.5Z"/></svg>
+          <span class="label">TikTok</span>
+        </button>
+      </div>
+
+      <div class="url-card">
+        <div class="url-row">
+          <div class="url-input-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+            <input
+              type="text"
+              class="url-input"
+              id="urlInput"
+              placeholder="Paste a YouTube link..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+          <button class="fetch-btn" id="fetchBtn" onclick="fetchFormats()">
+            <span id="fetchBtnLabel">Get video</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="loading-bar" id="loadingBar"><div class="loading-bar-inner"></div></div>
+      </div>
+
+      <div class="trust">
+        <div class="trust-item"><div class="trust-num">720p</div><div class="trust-label">Free tier</div></div>
+        <div class="trust-item"><div class="trust-num">4K</div><div class="trust-label">With Pro</div></div>
+        <div class="trust-item"><div class="trust-num">MP3</div><div class="trust-label">Audio extract</div></div>
+        <div class="trust-item"><div class="trust-num">∞</div><div class="trust-label">Unlimited</div></div>
+      </div>
+    </section>
+
+    <section class="results">
+      <div class="video-card" id="videoCard">
+        <div class="video-meta" id="videoMeta"></div>
+
+        <p class="section-label">Choose format</p>
+        <div class="formats-grid" id="formatsGrid"></div>
+
+        <div class="download-section">
+          <button class="download-btn" id="downloadBtn" onclick="startDownload()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6M3 21h18"/></svg>
+            Download now
+          </button>
+
+          <div class="progress-wrap" id="progressWrap">
+            <div class="progress-header">
+              <span>Downloading</span>
+              <span id="progressPct">0%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <div class="status-msg" id="statusMsg">
+            <div class="status-dot"></div>
+            <span id="statusText"></span>
+          </div>
+        </div>
+
+        <p class="note">For personal use only. Respect copyright and the platform's terms of service.</p>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+        </div>
+        <h3>Lightning fast</h3>
+        <p>Powered by yt-dlp under the hood — pulls the source directly with no middleman re-encoding.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 8v8l7-4-7-4z"/></svg>
+        </div>
+        <h3>Every quality</h3>
+        <p>From 144p preview clips to full 4K HDR. MP4 video or MP3 audio — pick whichever fits your use.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4z"/></svg>
+        </div>
+        <h3>Private by default</h3>
+        <p>No accounts, no tracking, no logs. Files stream straight to you and are deleted from the server.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Clip v1.1 — Powered by yt-dlp</span>
+    <span>YouTube · Instagram · TikTok</span>
+  </footer>
+</div>
+
+<!-- ---------- PRO MODAL ---------- -->
+<div class="modal-backdrop" id="proModal" onclick="if(event.target===this) closeProModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="proModalTitle">
+    <button class="modal-close" type="button" aria-label="Close" onclick="closeProModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h2 id="proModalTitle">Unlock <span class="it">Clip Pro</span>.</h2>
+    <p class="modal-sub">Skip the ads, unlock 1080p and above, and batch-download whole playlists — for the price of a coffee per month.</p>
+
+    <div class="plans">
+      <div class="plan">
+        <span class="plan-tag">Free</span>
+        <div class="plan-name">Clip</div>
+        <div class="plan-price"><span class="num">€0</span><span class="per">forever</span></div>
+        <ul class="plan-features">
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Up to 720p video</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>MP3 audio extract</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>YouTube · Instagram · TikTok</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>2 short ads before each download</li>
+        </ul>
+        <div class="plan-cta">Current plan</div>
+      </div>
+
+      <div class="plan featured">
+        <span class="plan-tag">Pro · Most popular</span>
+        <div class="plan-name"><span class="it">Pro</span></div>
+        <div class="plan-price"><span class="num">€4</span><span class="per">/month</span></div>
+        <ul class="plan-features">
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>1080p · 4K · 60fps · HDR</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Skip every ad · instant downloads</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Batch playlists & channels</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Auto-tagged MP3 (artist/title/cover)</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Subtitles & chapters export</li>
+        </ul>
+        <a class="plan-cta" id="checkoutLink" href="#" target="_blank" rel="noopener">Upgrade — €4/mo</a>
+      </div>
+    </div>
+
+    <div class="license-row">
+      <label for="licenseInput">Already paid?</label>
+      <input class="license-input" id="licenseInput" placeholder="Paste your license key here" autocomplete="off" spellcheck="false"/>
+      <button class="license-btn" type="button" onclick="activateLicense()">Activate</button>
+    </div>
+    <div class="license-msg" id="licenseMsg"></div>
+  </div>
+</div>
+
+<!-- ---------- AD GATE MODAL ---------- -->
+<div class="modal-backdrop" id="adModal">
+  <div class="modal ad-modal" role="dialog" aria-modal="true" aria-labelledby="adTitle">
+    <div class="ad-header">
+      <span class="ad-step">Ad <strong id="adStep">1</strong> of 2</span>
+      <span class="ad-countdown"><span id="adCountdown">15</span>s remaining</span>
+    </div>
+
+    <!-- Ad slot — populated by injectAd() in the script below. Swap that one
+         function to switch ad networks; no HTML changes needed. -->
+    <div class="ad-slot" id="adSlot"></div>
+
+    <div class="ad-progress"><div class="ad-progress-fill" id="adProgressFill"></div></div>
+
+    <div class="ad-actions">
+      <button class="ad-cancel" type="button" onclick="cancelAdGate()">Cancel download</button>
+      <button class="ad-skip-pro" type="button" onclick="closeAdGate(); openProModal();">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 9.2 8.6 2 9.5l5.4 4.7L5.8 22 12 18.3 18.2 22l-1.6-7.8L22 9.5l-7.2-.9L12 2z"/></svg>
+        Skip ads with Pro — €4/mo
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- Platform routing ----------
+  const PLATFORMS = {
+    youtube:   { word: 'YouTube',   placeholder: 'Paste a YouTube link...',             lede: 'Paste a link, pick a quality, and save the file. Free up to 720p — go Pro to unlock 1080p+ and skip the ads.' },
+    instagram: { word: 'Instagram', placeholder: 'Paste a Reel, post or story link...', lede: 'Reels, posts and stories saved without watermarks. Free up to 720p — go Pro for full quality and no ads.' },
+    tiktok:    { word: 'TikTok',    placeholder: 'Paste a TikTok video link...',         lede: 'TikToks without the watermark. Free up to 720p — go Pro for original resolution and no ads.' }
+  };
+
+  function platformFromPath() {
+    const p = (location.pathname || '').toLowerCase().replace(/\/+$/, '');
+    if (p === '/instagram') return 'instagram';
+    if (p === '/tiktok') return 'tiktok';
+    return 'youtube';
+  }
+
+  function setPlatform(name, { push = true } = {}) {
+    if (!PLATFORMS[name]) name = 'youtube';
+    const data = PLATFORMS[name];
+
+    document.querySelectorAll('.platform-tab').forEach(tab => {
+      const active = tab.dataset.platform === name;
+      tab.classList.toggle('active', active);
+      tab.setAttribute('aria-selected', active ? 'true' : 'false');
+    });
+
+    document.getElementById('platformWord').textContent = data.word;
+    document.getElementById('urlInput').placeholder = data.placeholder;
+    document.getElementById('lede').textContent = data.lede;
+    document.title = `Clip — Download from ${data.word}`;
+
+    if (push) {
+      const target = name === 'youtube' ? '/youtube' : '/' + name;
+      if (location.pathname !== target) {
+        history.pushState({ platform: name }, '', target);
+      }
+    }
+  }
+
+  document.querySelectorAll('.platform-tab').forEach(tab => {
+    tab.addEventListener('click', () => setPlatform(tab.dataset.platform));
+  });
+  window.addEventListener('popstate', () => setPlatform(platformFromPath(), { push: false }));
+  setPlatform(platformFromPath(), { push: false });
+
+  // ===========================================================================
+  // AD NETWORK INTEGRATION
+  // ===========================================================================
+  // To go live with Adsterra, you'll fill in two things below:
+  //   1. ADSTERRA_BANNER_KEY — from a Banner ad zone (300x250 recommended).
+  //   2. ADSTERRA_POPUNDER_KEY — from a Pop-under / OnClick ad zone.
+  // Leave them empty to keep the styled placeholder while developing.
+  // ===========================================================================
+  const ADSTERRA_BANNER_KEY   = ''; // e.g. 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4'
+  const ADSTERRA_POPUNDER_KEY = ''; // e.g. '1f2e3d4c5b6a1f2e3d4c5b6a1f2e3d4c'
+
+  // Render an ad inside the modal slot. Called once per ad in the gate sequence.
+  function injectAd(containerId) {
+    const slot = document.getElementById(containerId);
+    if (!slot) return;
+    slot.innerHTML = '';
+
+    if (ADSTERRA_BANNER_KEY) {
+      // ---- Adsterra Banner (Iframe Banner 300x250) ----
+      // Adsterra gives you a snippet that looks like:
+      //   <script>atOptions = {key:'...', format:'iframe', height:250, width:300, params:{}};</script>
+      //   <script src="//www.example.com/<KEY>/invoke.js"></script>
+      // We do the same thing dynamically so it works on every gate cycle.
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;';
+      slot.appendChild(wrapper);
+
+      const opts = document.createElement('script');
+      opts.type = 'text/javascript';
+      opts.text = `atOptions = { 'key': '${ADSTERRA_BANNER_KEY}', 'format': 'iframe', 'height': 250, 'width': 300, 'params': {} };`;
+      wrapper.appendChild(opts);
+
+      const invoke = document.createElement('script');
+      invoke.type = 'text/javascript';
+      invoke.src  = `//www.profitabledisplaynetwork.com/${ADSTERRA_BANNER_KEY}/invoke.js`;
+      wrapper.appendChild(invoke);
+      return;
+    }
+
+    // ---- Placeholder (dev mode) ----
+    slot.innerHTML = `
+      <span class="ad-slot-tag">Sponsored · Demo</span>
+      <h3>Your ad here.</h3>
+      <p>Add your Adsterra banner key at the top of the script and this slot will fill with real ads.</p>
+    `;
+  }
+
+  // Fire a pop-under once per download (separate revenue stream).
+  // Called from startDownload() before the gate, so the new tab opens during
+  // the user's intentional click — required by most browsers' pop-up blockers.
+  let popunderLoaded = false;
+  function triggerPopUnder() {
+    if (!ADSTERRA_POPUNDER_KEY || popunderLoaded) return;
+    popunderLoaded = true;
+    const s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.src  = `//pl${ADSTERRA_POPUNDER_KEY}.profitabledisplaynetwork.com/${ADSTERRA_POPUNDER_KEY}/invoke.js`;
+    s.async = true;
+    document.body.appendChild(s);
+  }
+
+  // ---------- Shared state (declared early so Pro init can read it) ----------
+  let selectedFormat = null;
+  let videoData = null;
+
+  // ---------- Pro / Licensing ----------
+  // TODO: paste your Lemon Squeezy checkout URL here (Products → your Pro product → Share/Embed → Checkout link).
+  // Until you swap this in, the "Upgrade" button will alert the user.
+  const CHECKOUT_URL = 'https://toolstackr.lemonsqueezy.com/checkout/buy/ed65dcf2-7ba4-4c65-997e-9d54c4d10192';
+
+  // Dev-only sample licenses you can hand out manually before integrating
+  // Lemon Squeezy's License API. Replace with real verification when ready.
+  const VALID_LICENSES = new Set([
+    'CLIP-PRO-DEV-2024',
+    'CLIP-FOUNDER-001'
+  ]);
+
+  function isPro() {
+    return localStorage.getItem('clip_pro') === '1';
+  }
+
+  function setPro(on) {
+    if (on) localStorage.setItem('clip_pro', '1');
+    else localStorage.removeItem('clip_pro');
+    document.getElementById('proBadge').style.display = on ? 'inline-flex' : 'none';
+    document.getElementById('goProBtn').style.display = on ? 'none' : 'inline-flex';
+    // Re-render formats if a video is loaded so locks update immediately.
+    if (videoData) renderCard(videoData);
+  }
+
+  function openProModal() {
+    document.getElementById('proModal').classList.add('open');
+    document.getElementById('licenseMsg').textContent = '';
+    document.getElementById('licenseInput').value = '';
+  }
+
+  function closeProModal() {
+    document.getElementById('proModal').classList.remove('open');
+  }
+
+  function activateLicense() {
+    const key = (document.getElementById('licenseInput').value || '').trim().toUpperCase();
+    const msg = document.getElementById('licenseMsg');
+    if (!key) { msg.textContent = 'Enter a license key first.'; msg.className = 'license-msg error'; return; }
+    if (VALID_LICENSES.has(key)) {
+      setPro(true);
+      msg.textContent = '✓ Pro activated. Enjoy.';
+      msg.className = 'license-msg success';
+      setTimeout(closeProModal, 900);
+    } else {
+      msg.textContent = '✗ Invalid key. Check your purchase email.';
+      msg.className = 'license-msg error';
+    }
+  }
+
+  // Wire the checkout button on load
+  document.addEventListener('DOMContentLoaded', () => {
+    const link = document.getElementById('checkoutLink');
+    if (CHECKOUT_URL.includes('YOUR-')) {
+      link.removeAttribute('target');
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert('Set CHECKOUT_URL in index.html to your Lemon Squeezy checkout link.');
+      });
+    } else {
+      link.href = CHECKOUT_URL;
+    }
+  });
+
+  // Close modal on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeProModal();
+  });
+
+  // Restore Pro state on load
+  setPro(isPro());
+
+  // ---------- Ad gate ----------
+  // Number of ads + duration per ad. Tweak as you like.
+  const AD_COUNT = 2;
+  const AD_DURATION = 15; // seconds
+
+  let adTimer = null;
+  let adCancelled = false;
+
+  function showAdGate() {
+    return new Promise((resolve, reject) => {
+      adCancelled = false;
+      const modal = document.getElementById('adModal');
+      const stepEl = document.getElementById('adStep');
+      const countdownEl = document.getElementById('adCountdown');
+      const fillEl = document.getElementById('adProgressFill');
+      modal.classList.add('open');
+
+      let step = 1;
+
+      function runStep() {
+        stepEl.textContent = String(step);
+        let remaining = AD_DURATION;
+        countdownEl.textContent = String(remaining);
+        fillEl.style.width = '0%';
+        // Tiny reflow so the transition kicks in cleanly
+        void fillEl.offsetWidth;
+
+        // Refresh the ad slot for this cycle (new ad each time).
+        injectAd('adSlot');
+
+        adTimer = setInterval(() => {
+          if (adCancelled) {
+            clearInterval(adTimer);
+            modal.classList.remove('open');
+            return reject(new Error('cancelled'));
+          }
+          remaining -= 1;
+          countdownEl.textContent = String(Math.max(remaining, 0));
+          fillEl.style.width = ((AD_DURATION - remaining) / AD_DURATION * 100) + '%';
+          if (remaining <= 0) {
+            clearInterval(adTimer);
+            if (step < AD_COUNT) {
+              step += 1;
+              runStep();
+            } else {
+              modal.classList.remove('open');
+              resolve();
+            }
+          }
+        }, 1000);
+      }
+
+      runStep();
+    });
+  }
+
+  function cancelAdGate() {
+    adCancelled = true;
+    if (adTimer) clearInterval(adTimer);
+    document.getElementById('adModal').classList.remove('open');
+  }
+
+  function closeAdGate() {
+    cancelAdGate();
+  }
+
+  // ---------- Downloader logic ----------
+
+  // A format is Pro-only if it's >=1080p or marked as HQ.
+  // Free users can still download 720p / 480p / 360p / MP3 (after watching ads).
+  function isProFormat(f) {
+    const label = (f.label || '').toLowerCase();
+    if (label.includes('hq')) return true;
+    const m = label.match(/(\d+)p/);
+    if (m && parseInt(m[1], 10) >= 1080) return true;
+    return false;
+  }
+
+  function formatDuration(s) {
+    if (!s) return '';
+    const m = Math.floor(s / 60), sec = s % 60;
+    return `${m}:${String(sec).padStart(2, '0')}`;
+  }
+
+  function formatBytes(b) {
+    if (!b) return '';
+    if (b > 1e9) return `~${(b / 1e9).toFixed(1)} GB`;
+    if (b > 1e6) return `~${(b / 1e6).toFixed(0)} MB`;
+    return `~${(b / 1e3).toFixed(0)} KB`;
+  }
+
+  function setStatus(msg, type = '') {
+    const el = document.getElementById('statusMsg');
+    const txt = document.getElementById('statusText');
+    el.className = 'status-msg visible ' + type;
+    txt.textContent = msg;
+  }
+
+  function clearStatus() {
+    document.getElementById('statusMsg').className = 'status-msg';
+  }
+
+  async function fetchFormats() {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) return;
+
+    selectedFormat = null;
+    clearStatus();
+    document.getElementById('videoCard').classList.remove('visible');
+    document.getElementById('downloadBtn').disabled = true;
+
+    const btn = document.getElementById('fetchBtn');
+    const lbl = document.getElementById('fetchBtnLabel');
+    btn.disabled = true;
+    lbl.textContent = 'Loading...';
+    document.getElementById('loadingBar').classList.add('active');
+
+    try {
+      const res = await fetch('/api/formats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) throw new Error(data.error || 'Failed');
+
+      videoData = data;
+      renderCard(data);
+    } catch (e) {
+      setStatus(e.message || 'Something went wrong.', 'error');
+    } finally {
+      btn.disabled = false;
+      lbl.textContent = 'Get video';
+      document.getElementById('loadingBar').classList.remove('active');
+    }
+  }
+
+  function renderCard(data) {
+    document.getElementById('videoMeta').innerHTML = `
+      ${data.thumbnail ? `<img class="video-thumb" src="${data.thumbnail}" alt="" onerror="this.style.display='none'">` : ''}
+      <div class="video-info">
+        <div class="video-title" title="${data.title || ''}">${data.title || 'Untitled'}</div>
+        <div class="video-sub">${data.uploader || ''}${data.duration ? ' · ' + formatDuration(data.duration) : ''}</div>
+      </div>
+    `;
+
+    const grid = document.getElementById('formatsGrid');
+    grid.innerHTML = '';
+    const userIsPro = isPro();
+    data.formats.forEach((f) => {
+      const proOnly = isProFormat(f);
+      const locked = proOnly && !userIsPro;
+      const card = document.createElement('div');
+      card.className = 'format-card' + (locked ? ' locked' : '');
+      card.innerHTML = `
+        <div class="format-res">${f.label.split(' ')[0]}</div>
+        <div class="format-type">${f.type === 'audio' ? 'MP3 audio' : (f.ext || '').toUpperCase()}</div>
+        ${f.filesize ? `<div class="format-size">${formatBytes(f.filesize)}</div>` : ''}
+        ${proOnly ? `<div class="format-pro-tag">Pro</div>` : ''}
+      `;
+      card.onclick = () => {
+        if (locked) {
+          openProModal();
+          return;
+        }
+        selectFormat(f, card);
+      };
+      grid.appendChild(card);
+    });
+
+    document.getElementById('videoCard').classList.add('visible');
+    document.getElementById('videoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function selectFormat(format, el) {
+    document.querySelectorAll('.format-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedFormat = format;
+    document.getElementById('downloadBtn').disabled = false;
+    clearStatus();
+  }
+
+  async function startDownload() {
+    if (!selectedFormat || !videoData) return;
+
+    // Free users have to watch the ad sequence first. Pro users skip it.
+    if (!isPro()) {
+      // Fire pop-under during the user's click gesture so it isn't blocked.
+      triggerPopUnder();
+      try {
+        await showAdGate();
+      } catch (e) {
+        // User cancelled — bail out silently.
+        return;
+      }
+    }
+
+    const url = document.getElementById('urlInput').value.trim();
+    const btn = document.getElementById('downloadBtn');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressFill = document.getElementById('progressFill');
+    const progressPct = document.getElementById('progressPct');
+
+    btn.disabled = true;
+    progressWrap.classList.add('active');
+    progressFill.style.width = '0%';
+    progressPct.textContent = '0%';
+    clearStatus();
+
+    const params = new URLSearchParams({
+      url,
+      format_id: selectedFormat.format_id,
+      label: videoData.title,
+      ext: selectedFormat.ext
+    });
+
+    const evtSource = new EventSource(`/api/download?${params}`);
+
+    evtSource.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+
+      if (msg.type === 'progress') {
+        const pct = Math.min(msg.percent, 99);
+        progressFill.style.width = pct + '%';
+        progressPct.textContent = Math.round(pct) + '%';
+      }
+
+      if (msg.type === 'done') {
+        evtSource.close();
+        progressFill.style.width = '100%';
+        progressPct.textContent = '100%';
+
+        const a = document.createElement('a');
+        a.href = `/api/file?path=${encodeURIComponent(msg.file)}&name=${encodeURIComponent(msg.name)}`;
+        a.click();
+
+        setTimeout(() => {
+          progressWrap.classList.remove('active');
+          btn.disabled = false;
+          setStatus('Download complete — check your downloads folder.', 'success');
+        }, 800);
+      }
+
+      if (msg.type === 'error') {
+        evtSource.close();
+        progressWrap.classList.remove('active');
+        btn.disabled = false;
+        setStatus(msg.message, 'error');
+      }
+    };
+
+    evtSource.onerror = () => {
+      evtSource.close();
+      progressWrap.classList.remove('active');
+      btn.disabled = false;
+      setStatus('Connection lost. Please try again.', 'error');
+    };
+  }
+
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') fetchFormats();
+  });
+</script>
+</body>
+</html>

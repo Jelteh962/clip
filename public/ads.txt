@@ -1,0 +1,19 @@
+# =============================================================================
+# ads.txt — IAB Tech Lab spec
+# =============================================================================
+# Ad networks read this file at https://yourdomain.com/ads.txt to verify that
+# you authorize them to sell your inventory. Without it, most networks won't
+# pay full rates (or at all).
+#
+# After you create an ad zone in Adsterra, they show you a line to paste here.
+# It looks something like:
+#
+#   adsterra.com, 12345, DIRECT, abcdef0123456789
+#
+# Replace the example below with the real line(s) from each network you use.
+# Multiple networks = one line per network.
+# =============================================================================
+
+# Adsterra — replace this with the line shown in your Adsterra dashboard
+# (Profile → ads.txt). Example only:
+# adsterra.com, 0000, DIRECT

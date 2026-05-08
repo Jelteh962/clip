@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F4F1EC; --surface: #fff; --border: #D8D4CC; --text: #1A1814;
+      --muted: #8A8680; --accent: #C8391A; --accent-2: #E5613A; --success: #2D6A4F;
+      --mono: 'DM Mono', monospace; --serif: 'Instrument Serif', serif; --sans: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      width: 360px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      padding: 16px;
+    }
+    header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .logo { font-family: var(--serif); font-style: italic; font-size: 22px; letter-spacing: -0.03em; }
+    .pro-pill {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 999px; background: rgba(45,106,79,0.1); color: var(--success);
+      display: none;
+    }
+    .pro-pill.on { display: inline-block; }
+    .platform { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+    .url {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); background: var(--surface);
+      border-radius: 8px; font-family: var(--mono); font-size: 11px; color: var(--text); outline: none;
+      margin-bottom: 10px;
+    }
+    .url:focus { border-color: var(--accent); }
+    .btn {
+      width: 100%; padding: 12px; border: none; background: var(--text); color: #fff;
+      border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--accent); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn.primary { background: var(--accent); }
+    .btn.primary:hover { background: var(--accent-2); }
+
+    .meta { display: flex; gap: 10px; margin: 14px 0 10px; padding: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+    .thumb { width: 64px; height: 36px; object-fit: cover; border-radius: 4px; background: var(--border); flex-shrink: 0; }
+    .title { font-family: var(--serif); font-size: 13px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+    .formats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
+    .fmt {
+      padding: 8px 6px; border: 1px solid var(--border); background: var(--surface); border-radius: 6px;
+      cursor: pointer; text-align: center; transition: all 0.12s; position: relative;
+    }
+    .fmt:hover { border-color: var(--text); }
+    .fmt.selected { border-color: var(--accent); background: #F5EAE7; }
+    .fmt.locked { opacity: 0.55; }
+    .fmt.locked::after { content: '🔒'; position: absolute; top: 4px; right: 6px; font-size: 9px; }
+    .fmt-res { font-family: var(--serif); font-style: italic; font-size: 14px; }
+    .fmt-type { font-family: var(--mono); font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+
+    .progress { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 10px 0; display: none; }
+    .progress.on { display: block; }
+    .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
+
+    .status { font-size: 11px; margin-top: 8px; color: var(--muted); }
+    .status.error { color: var(--accent); }
+    .status.success { color: var(--success); }
+
+    footer { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; cursor: pointer; }
+    footer a:hover { text-decoration: underline; }
+
+    .license-modal {
+      display: none; position: fixed; inset: 0; background: rgba(26,24,20,0.6); padding: 16px;
+      align-items: center; justify-content: center;
+    }
+    .license-modal.on { display: flex; }
+    .license-box { background: var(--bg); padding: 16px; border-radius: 12px; width: 100%; }
+    .license-box h3 { font-family: var(--serif); font-size: 18px; margin-bottom: 6px; }
+    .license-box p { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+    .license-box input { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: var(--mono); font-size: 11px; outline: none; margin-bottom: 8px; }
+    .license-box .row { display: flex; gap: 6px; }
+    .license-box .btn { flex: 1; padding: 9px; font-size: 12px; }
+    .license-box .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="logo">Clip</span>
+    <span class="pro-pill" id="proPill">Pro</span>
+  </header>
+
+  <div class="platform" id="platform">Detecting…</div>
+  <input type="text" class="url" id="urlInput" placeholder="Paste a link…" />
+  <button class="btn primary" id="fetchBtn">Get video</button>
+
+  <div id="result" style="display:none">
+    <div class="meta" id="meta"></div>
+    <div class="formats" id="formats"></div>
+    <div class="progress" id="progress"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="btn primary" id="downloadBtn" disabled>Download</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <footer>
+    <a id="upgradeLink">Upgrade to Pro</a>
+    <span>v1.0</span>
+  </footer>
+
+  <div class="license-modal" id="licenseModal">
+    <div class="license-box">
+      <h3>Activate Pro</h3>
+      <p>Paste the license key from your purchase email.</p>
+      <input id="licenseInput" placeholder="CLIP-XXXX-XXXX-XXXX" autocomplete="off"/>
+      <div class="row">
+        <button class="btn ghost" id="licenseCancel">Cancel</button>
+        <button class="btn" id="licenseSave">Activate</button>
+      </div>
+      <div class="status" id="licenseMsg"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
