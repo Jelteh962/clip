@@ -41,9 +41,9 @@ function ytCommonArgs() {
     "--fragment-retries", "5",
     "--force-ipv4", // YT's bot scoring is harsher on IPv6 datacenter ranges
     "--geo-bypass",
-    // tv_embedded + web is the most reliable mix in 2025 — android client
-    // increasingly returns 403 on actual stream URLs even when metadata fetches.
-    "--extractor-args", "youtube:player_client=tv_embedded,web,mweb",
+    // With cookies loaded the default client mix works best. Without cookies,
+    // we rely on yt-dlp picking sensible fallbacks.
+    "--extractor-args", "youtube:player_client=default",
     "--user-agent",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
   ];
