@@ -13,7 +13,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" href="/favicon.png" type="image/png">
-  <title>Clip — Download from YouTube, Instagram & TikTok</title>
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESCRIPTION}}"/>
+  <link rel="canonical" href="{{CANONICAL}}"/>
+  <meta property="og:title" content="{{TITLE}}"/>
+  <meta property="og:description" content="{{DESCRIPTION}}"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="{{CANONICAL}}"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="{{TITLE}}"/>
+  <meta name="twitter:description" content="{{DESCRIPTION}}"/>
+  {{JSON_LD}}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -910,6 +920,74 @@
     .license-msg.success { color: var(--success); }
     .license-msg.error { color: var(--accent); }
 
+    /* ---------- SEO CONTENT (landing pages) ---------- */
+    .seo-content {
+      max-width: 760px;
+      margin: 80px auto 0;
+      padding: 0 4px;
+      color: var(--text);
+      font-size: 15.5px;
+      line-height: 1.75;
+    }
+    .seo-content h2 {
+      font-family: var(--serif);
+      font-size: 36px;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      font-weight: 400;
+      margin: 56px 0 14px;
+    }
+    .seo-content h2 .it { font-style: italic; color: var(--accent); }
+    .seo-content h2:first-child { margin-top: 0; }
+    .seo-content h3 {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      margin: 28px 0 8px;
+      font-weight: 400;
+    }
+    .seo-content p { margin-bottom: 16px; color: #2A2622; }
+    .seo-content a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(200,57,26,0.3); }
+    .seo-content a:hover { border-bottom-color: var(--accent); }
+    .seo-content ol, .seo-content ul { margin: 0 0 18px 22px; }
+    .seo-content li { margin-bottom: 6px; color: #2A2622; }
+    .seo-content strong { color: var(--text); font-weight: 600; }
+    .seo-content code { font-family: var(--mono); font-size: 13px; background: var(--bg-2); padding: 2px 6px; border-radius: 4px; }
+    .seo-content blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 18px;
+      margin: 18px 0;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .seo-content .seo-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      border-bottom: none;
+      margin: 14px 0;
+      transition: background 0.15s;
+    }
+    .seo-content .seo-cta:hover { background: var(--accent-2); border-bottom: none; }
+    .seo-faq-item {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      padding: 18px 22px;
+    }
+    .seo-faq-item h3 { margin: 0 0 8px; font-style: normal; font-family: var(--sans); font-size: 16px; font-weight: 600; }
+    .seo-faq-item p { margin-bottom: 0; }
+
     /* ---------- LENGTH LOCK PANEL ---------- */
     .length-lock {
       display: none;
@@ -1145,6 +1223,11 @@
   </style>
 </head>
 <body>
+<script>
+  // Server-injected hints for SEO landing pages.
+  window.__CLIP_DEFAULT_PLATFORM__ = '{{DEFAULT_PLATFORM}}';
+  window.__CLIP_DEFAULT_FORMAT__   = '{{DEFAULT_FORMAT}}';
+</script>
 <div class="halo"></div>
 
 <div class="page">
@@ -1262,6 +1345,8 @@
       </div>
     </section>
 
+    {{SEO_CONTENT}}
+
     <section class="features" id="features">
       <div class="feature">
         <div class="feature-icon">
@@ -1373,6 +1458,10 @@
   };
 
   function platformFromPath() {
+    // Server-injected hint takes priority (used on SEO landing pages).
+    if (window.__CLIP_DEFAULT_PLATFORM__ && PLATFORMS[window.__CLIP_DEFAULT_PLATFORM__]) {
+      return window.__CLIP_DEFAULT_PLATFORM__;
+    }
     const p = (location.pathname || '').toLowerCase().replace(/\/+$/, '');
     if (p === '/instagram') return 'instagram';
     if (p === '/tiktok') return 'tiktok';
@@ -1794,6 +1883,17 @@
 
     document.getElementById('videoCard').classList.add('visible');
     document.getElementById('videoCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // SEO landing pages can hint a default format ("mp3" / "mp4"). Auto-select it.
+    const hint = (window.__CLIP_DEFAULT_FORMAT__ || '').toLowerCase();
+    if (hint) {
+      const cards = document.querySelectorAll('.format-card:not(.locked)');
+      for (const c of cards) {
+        const text = c.textContent.toLowerCase();
+        if (hint === 'mp3' && text.includes('mp3')) { c.click(); break; }
+        if (hint === 'mp4' && /\b(720p|1080p|480p|360p)\b/.test(text)) { c.click(); break; }
+      }
+    }
   }
 
   function selectFormat(format, el) {
