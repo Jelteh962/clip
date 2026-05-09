@@ -1037,6 +1037,13 @@ app.post("/api/verify-license", async (req, res) => {
   }
 });
 
+// Catch-all 404 — must be the LAST route registered so it only fires for
+// URLs no other route matched. Serves the styled 404 page with the proper
+// HTTP status so Google doesn't treat unknown URLs as soft-200s.
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
+});
+
 const PORT = process.env.PORT || 3000;
 // Bind to 0.0.0.0 explicitly so cloud platforms (Railway, Fly, Render) can reach it.
 app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
