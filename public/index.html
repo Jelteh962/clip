@@ -1655,11 +1655,10 @@
 
   // ---------- Downloader logic ----------
 
-  // A format is Pro-only if it's >=1080p or marked as HQ.
-  // Free users can still download 720p / 480p / 360p / MP3 (after watching ads).
+  // A format is Pro-only if it's >=1080p. HQ tag alone doesn't lock it —
+  // some platforms only expose video-only streams at low resolutions too.
   function isProFormat(f) {
     const label = (f.label || '').toLowerCase();
-    if (label.includes('hq')) return true;
     const m = label.match(/(\d+)p/);
     if (m && parseInt(m[1], 10) >= 1080) return true;
     return false;
