@@ -87,6 +87,11 @@ function ytCommonArgs() {
   const proxy = pickProxy();
   if (proxy) {
     args.push("--proxy", proxy);
+    // Log redacted host so we can correlate failures with specific proxy IPs
+    const m = proxy.match(/@([^:]+):(\d+)/);
+    if (m) console.log(`[yt-dlp] using proxy ${m[1]}:${m[2]}, cookies=${COOKIES_AVAILABLE}`);
+  } else {
+    console.log(`[yt-dlp] NO PROXY available, cookies=${COOKIES_AVAILABLE}`);
   }
   return args;
 }
@@ -99,6 +104,49 @@ app.get("/api/health", (_req, res) => {
     cookiesLoaded: COOKIES_AVAILABLE,
     proxyCount: PROXIES.length,
     nodeVersion: process.version,
+  });
+});
+
+// =============================================================================
+// /api/test-proxy — diagnostic. Verifies the proxy stack actually reaches
+// YouTube and reports yt-dlp's own view of what's happening.
+// Hit https://yourdomain.com/api/test-proxy?url=https://youtu.be/dQw4w9WgXcQ
+// =============================================================================
+app.get("/api/test-proxy", (req, res) => {
+  const url = req.query.url || "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+  const useCookies = req.query.cookies !== "0";
+  const useProxy = req.query.proxy !== "0";
+
+  const args = [
+    "--no-playlist",
+    "--no-warnings",
+    "--verbose",
+    "--simulate",
+    "--print", "title",
+    "--extractor-args", "youtube:player_client=default",
+  ];
+  if (useCookies && COOKIES_AVAILABLE) args.push("--cookies", COOKIES_PATH);
+  let chosenProxy = null;
+  if (useProxy) {
+    chosenProxy = pickProxy();
+    if (chosenProxy) args.push("--proxy", chosenProxy);
+  }
+  args.push(url);
+
+  // Redact creds from the proxy URL for the response
+  const safeProxy = chosenProxy ? chosenProxy.replace(/\/\/[^@]+@/, "//***@") : null;
+  console.log("[test-proxy] running yt-dlp with proxy:", safeProxy, "cookies:", useCookies && COOKIES_AVAILABLE);
+
+  execFile("yt-dlp", args, { timeout: 25000, maxBuffer: 32 * 1024 * 1024 }, (err, stdout, stderr) => {
+    res.json({
+      ok: !err,
+      url,
+      proxyUsed: safeProxy,
+      cookiesUsed: useCookies && COOKIES_AVAILABLE,
+      title: (stdout || "").trim(),
+      // Last ~40 lines of yt-dlp's stderr — shows the real story
+      stderrTail: (stderr || "").split("\n").slice(-40).join("\n"),
+    });
   });
 });
 
