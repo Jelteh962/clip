@@ -2574,6 +2574,29 @@
     if (hint) hint.style.display = 'none';
   }
 
+  // Pages where the SEO content IS the main attraction (not the downloader)
+  // should scroll the visitor straight to the content so they don't miss it
+  // below the fold. Retries for up to ~2s in case the element renders late.
+  const SCROLL_TO_SEO_PAGES = new Set(['/chrome-extension']);
+  if (SCROLL_TO_SEO_PAGES.has(location.pathname)) {
+    const prefersReduced = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let tries = 0;
+    function tryScroll() {
+      const target = document.querySelector('.ext-hero') || document.querySelector('.seo-content');
+      if (target) {
+        target.scrollIntoView({
+          behavior: prefersReduced ? 'auto' : 'smooth',
+          block: 'start',
+        });
+        return;
+      }
+      if (tries++ < 20) setTimeout(tryScroll, 100); // retry up to 2s
+    }
+    // Wait one frame so layout is settled, then attempt the scroll.
+    requestAnimationFrame(() => setTimeout(tryScroll, 150));
+  }
+
   // ---------- URL prefill (from Chrome extension or share links) ----------
   // The extension opens https://clip.app/?url=<encoded video URL>&from=ext
   // We pre-fill the input and auto-trigger Get video so the user lands on
