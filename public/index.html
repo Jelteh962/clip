@@ -1107,6 +1107,108 @@
     .seo-faq-item h3 { margin: 0 0 8px; font-style: normal; font-family: var(--sans); font-size: 16px; font-weight: 600; }
     .seo-faq-item p { margin-bottom: 0; }
 
+    /* ---------- EXTENSION CTA (hero hint + post-download) ---------- */
+    .ext-hint {
+      max-width: 720px;
+      margin: 14px auto 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px 8px 8px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12.5px;
+      color: var(--text);
+      box-shadow: 0 1px 0 rgba(26,24,20,0.04);
+      text-decoration: none;
+      transition: border-color 0.15s, transform 0.1s;
+    }
+    .ext-hint:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .ext-hint .ext-hint-chip {
+      background: var(--text);
+      color: #fff;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .ext-hint .ext-hint-arrow { color: var(--muted); transition: color 0.15s; }
+    .ext-hint:hover .ext-hint-arrow { color: var(--accent); }
+
+    /* The hero hint is centered separately so it sits below the trust strip */
+    .hero .ext-hint { display: inline-flex; }
+    .hero-hint-wrap { text-align: center; margin-top: 24px; }
+
+    /* Post-download success state — replaces the simple status message
+       with something more substantial that pushes the extension. */
+    .post-dl-cta {
+      display: none;
+      margin-top: 18px;
+      padding: 16px 18px;
+      background: linear-gradient(160deg, #1A1814 0%, #2C1F12 100%);
+      color: #F4D58D;
+      border-radius: 12px;
+      align-items: center;
+      gap: 14px;
+    }
+    .post-dl-cta.visible { display: flex; }
+    .post-dl-cta .post-dl-text { flex: 1; min-width: 0; line-height: 1.45; }
+    .post-dl-cta .post-dl-text strong { color: #fff; display: block; margin-bottom: 2px; }
+    .post-dl-cta .post-dl-text span { font-size: 12.5px; color: rgba(244,213,141,0.7); }
+    .post-dl-cta .post-dl-btn {
+      flex-shrink: 0;
+      padding: 9px 14px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .post-dl-cta .post-dl-btn:hover { background: var(--accent-2); }
+    .post-dl-cta .post-dl-dismiss {
+      background: transparent;
+      border: none;
+      color: rgba(244,213,141,0.6);
+      cursor: pointer;
+      padding: 6px;
+      flex-shrink: 0;
+    }
+    .post-dl-cta .post-dl-dismiss:hover { color: #F4D58D; }
+
+    /* Bigger CTA + tag for the /chrome-extension landing page hero */
+    .ext-hero {
+      padding: 40px 28px;
+      background: linear-gradient(160deg, #1A1814 0%, #2C1F12 100%);
+      color: #F4D58D;
+      border-radius: 18px;
+      margin-bottom: 36px;
+      text-align: center;
+    }
+    .ext-hero h2 { color: #fff; }
+    .ext-hero h2 .it { color: #F4D58D; }
+    .ext-hero p { color: rgba(244,213,141,0.85); }
+    .ext-hero-tag {
+      display: inline-block;
+      padding: 5px 12px;
+      background: rgba(244,213,141,0.15);
+      color: #F4D58D;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .ext-hero .seo-cta { background: var(--accent); border-bottom: none; }
+    .ext-hero .seo-cta:hover { background: var(--accent-2); border-bottom: none; }
+
     /* ---------- RELATED TOOLS GRID ---------- */
     .seo-related {
       max-width: 760px;
@@ -1489,7 +1591,7 @@
       <div class="logo-dot"></div>
     </div>
     <div class="nav-links">
-      <a href="#features">Features</a>
+      <a href="/chrome-extension">Extension</a>
       <a href="/faq">FAQ</a>
       <button class="go-pro-btn" id="proBadge" type="button" style="display:none" onclick="openProModal()">
         <span class="pro-pulse"></span>
@@ -1555,6 +1657,14 @@
         <div class="trust-item"><div class="trust-num">MP3</div><div class="trust-label">Audio extract</div></div>
         <div class="trust-item"><div class="trust-num">∞</div><div class="trust-label">Unlimited</div></div>
       </div>
+
+      <div class="hero-hint-wrap" id="extHeroHintWrap">
+        <a class="ext-hint" href="/chrome-extension" id="extHeroHint">
+          <span class="ext-hint-chip">New</span>
+          <span>Chrome extension — download in 1 click</span>
+          <span class="ext-hint-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
     </section>
 
     <section class="results">
@@ -1594,6 +1704,17 @@
             <div class="status-dot"></div>
             <span id="statusText"></span>
           </div>
+
+          <div class="post-dl-cta" id="postDlCta">
+            <div class="post-dl-text">
+              <strong>Skip the paste step next time</strong>
+              <span>Install the Chrome extension and a Download button appears on every video.</span>
+            </div>
+            <a class="post-dl-btn" href="/chrome-extension" target="_blank" rel="noopener">Get extension</a>
+            <button class="post-dl-dismiss" type="button" aria-label="Dismiss" onclick="dismissPostDlCta()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
         </div>
 
         <p class="note">For personal use only. Respect copyright and the platform's terms of service.</p>
@@ -1630,6 +1751,7 @@
   <footer>
     <span>Clip v1.1 — Powered by yt-dlp</span>
     <span class="footer-links">
+      <a href="/chrome-extension">Chrome extension</a> ·
       <a href="/faq">FAQ</a> ·
       <a href="/privacy">Privacy</a> ·
       <a href="/terms">Terms</a> ·
@@ -2403,6 +2525,7 @@
           progressWrap.classList.remove('active');
           btn.disabled = false;
           setStatus('Download complete — check your downloads folder.', 'success');
+          maybeShowPostDlCta();
         }, 800);
       }
 
@@ -2425,6 +2548,31 @@
   document.getElementById('urlInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') fetchFormats();
   });
+
+  // ---------- Extension promotion ----------
+  // Skip the hero "New" badge if the user is already on the extension page
+  // or has dismissed it. Show the post-download CTA after a successful
+  // download unless dismissed.
+  function isExtensionDismissed() {
+    try { return localStorage.getItem('clip_ext_dismissed') === '1'; } catch { return false; }
+  }
+  function dismissPostDlCta() {
+    try { localStorage.setItem('clip_ext_dismissed', '1'); } catch {}
+    const el = document.getElementById('postDlCta');
+    if (el) el.classList.remove('visible');
+    const hint = document.getElementById('extHeroHintWrap');
+    if (hint) hint.style.display = 'none';
+  }
+  function maybeShowPostDlCta() {
+    if (isExtensionDismissed()) return;
+    const el = document.getElementById('postDlCta');
+    if (el) el.classList.add('visible');
+  }
+  // Hide hero hint if previously dismissed.
+  if (isExtensionDismissed()) {
+    const hint = document.getElementById('extHeroHintWrap');
+    if (hint) hint.style.display = 'none';
+  }
 
   // ---------- URL prefill (from Chrome extension or share links) ----------
   // The extension opens https://clip.app/?url=<encoded video URL>&from=ext

@@ -373,6 +373,10 @@ app.get("/api/file", (req, res) => {
 
 const SITE_BASE = process.env.SITE_BASE_URL || ""; // e.g. "https://clip.app"
 const SITE_NAME = "Clip";
+// Once your extension is published in the Chrome Web Store, set this env var
+// to its install URL (e.g. https://chrome.google.com/webstore/detail/clip/abc...).
+// Until then we point users at /chrome-extension explainer page.
+const EXTENSION_URL = process.env.EXTENSION_URL || "/chrome-extension";
 
 // Shared "Related tools" block automatically appended to every landing page's
 // SEO content. Internal linking distributes page authority across the whole
@@ -391,6 +395,7 @@ const RELATED_TOOLS_BLOCK = (currentPath) => {
     { path: "/instagram-story-downloader",    label: "Instagram Stories" },
     { path: "/twitter-video-downloader",      label: "Twitter / X videos" },
     { path: "/facebook-video-downloader",     label: "Facebook videos" },
+    { path: "/chrome-extension",              label: "Chrome extension" },
   ];
   const others = ALL_TOOLS.filter((t) => t.path !== currentPath);
   return `
@@ -766,6 +771,77 @@ const LANDING_PAGES = {
           <li><a href="/tiktok-downloader">TikTok downloader</a></li>
           <li><a href="/instagram-reels-downloader">Instagram Reels downloader</a></li>
         </ul>
+      </section>
+    `,
+  },
+
+  "/chrome-extension": {
+    title: "Clip Chrome Extension — One-click video downloads | Clip",
+    description: "Free Chrome extension that adds a Download button to YouTube, Instagram, TikTok, Twitter and Facebook. Skip the paste step — download in one click.",
+    platform: "youtube",
+    format: "",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Clip Chrome Extension",
+      "applicationCategory": "BrowserApplication",
+      "operatingSystem": "Chrome",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+      "description": "Adds a one-click Download button to YouTube, Instagram, TikTok, Twitter and Facebook video pages."
+    },
+    seoContent: `
+      <section class="seo-content">
+        <div class="ext-hero">
+          <span class="ext-hero-tag">Free · Chrome Extension</span>
+          <h2 style="margin-top:14px">One click. <span class="it">Any video.</span></h2>
+          <p style="font-size:17px">A red Download button appears on every YouTube, Instagram, TikTok, Twitter and Facebook video page. Click it. The video opens in Clip with the link already filled in. Skip the copy-paste dance.</p>
+          <p style="margin-top:18px">
+            <a class="seo-cta" href="https://chrome.google.com/webstore/category/extensions" target="_blank" rel="noopener">
+              Install for Chrome — it's free
+            </a>
+          </p>
+          <p style="font-size:12px;color:var(--muted);margin-top:8px">Works on Chrome, Edge, Brave, Opera and any other Chromium browser.</p>
+        </div>
+
+        <h2 style="margin-top:64px">How it <span class="it">works</span></h2>
+        <ol>
+          <li><strong>Install the extension</strong> from the Chrome Web Store (one click).</li>
+          <li><strong>Browse YouTube, TikTok, Instagram, Twitter or Facebook</strong> as you normally would.</li>
+          <li>On any video page, you'll see a small red <strong>Download</strong> button in the bottom-right corner.</li>
+          <li><strong>Click it.</strong> A new tab opens at Clip with the video loaded and ready to download.</li>
+          <li><strong>Pick a quality, hit Download.</strong> Done.</li>
+        </ol>
+
+        <h2 style="margin-top:48px">What makes it <span class="it">good</span></h2>
+        <h3>It only shows up when you actually want it</h3>
+        <p>The button doesn't appear on the YouTube homepage, your Instagram inbox, or anywhere else that isn't a real video page. It only loads on watch pages, reels, posts and Twitter status URLs with video.</p>
+
+        <h3>It doesn't slow your browser down</h3>
+        <p>The extension is ~12 KB total. It runs only on the supported sites, doesn't track you across the web, doesn't read your data, and doesn't run any background processes when you're not on a video page.</p>
+
+        <h3>It respects your privacy</h3>
+        <p>The extension reads the URL of the page you click Download on — that's it. It doesn't collect history, login state, or any personal data. The list of permissions in the install prompt looks scary but is actually minimal — Chrome requires you grant access to each domain the extension reads URLs from. We grant ourselves access to YouTube, Instagram, TikTok, Twitter and Facebook only.</p>
+
+        <h3>It's free, including for Pro users</h3>
+        <p>Clip Pro and Free users both get the extension for free. Pro users get the same 1-click experience, but skip the ads and unlock 4K. <a href="/#features">See Pro features</a>.</p>
+
+        <h2 style="margin-top:48px">Frequently <span class="it">asked</span></h2>
+        <div class="seo-faq-item">
+          <h3>Does the extension download videos itself, or does it use the website?</h3>
+          <p>It opens the video in the Clip website. We do this on purpose — it means the same Pro features (4K, batch downloads, no ads) work in the extension, and you don't end up with two separate accounts to manage.</p>
+        </div>
+        <div class="seo-faq-item">
+          <h3>Will it work on Edge / Brave / Opera?</h3>
+          <p>Yes. All Chromium-based browsers run Chrome Web Store extensions. We've tested on Chrome, Edge and Brave. Firefox isn't supported yet — let us know if you want it.</p>
+        </div>
+        <div class="seo-faq-item">
+          <h3>How do I uninstall?</h3>
+          <p>Right-click the Clip icon in your Chrome toolbar → "Remove from Chrome." That's it.</p>
+        </div>
+        <div class="seo-faq-item">
+          <h3>Does YouTube ban accounts that use this?</h3>
+          <p>No. The extension doesn't sign you into YouTube or interact with your YouTube account in any way. It just reads the URL of the video page you're already viewing.</p>
+        </div>
       </section>
     `,
   },
