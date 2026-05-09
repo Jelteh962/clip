@@ -374,13 +374,34 @@ app.get("/api/file", (req, res) => {
 const SITE_BASE = process.env.SITE_BASE_URL || ""; // e.g. "https://clip.app"
 const SITE_NAME = "Clip";
 
-// Shared default chunks reused across pages
-const SEO_FOOTER = `
-  <h2>Why use <span class="it">Clip</span>?</h2>
-  <p>Clip is the fastest free video downloader for YouTube, Instagram and TikTok.
-  No signup, no installation, no watermark. Paste a link, pick a quality, save the file.
-  Upgrade to Pro for 1080p+, batch playlists, and zero ads — all for €4 a month.</p>
-`;
+// Shared "Related tools" block automatically appended to every landing page's
+// SEO content. Internal linking distributes page authority across the whole
+// landing page set — every page reinforces every other page.
+const RELATED_TOOLS_BLOCK = (currentPath) => {
+  const ALL_TOOLS = [
+    { path: "/youtube-to-mp3",                label: "YouTube to MP3" },
+    { path: "/youtube-to-mp4",                label: "YouTube to MP4" },
+    { path: "/youtube-shorts-downloader",     label: "YouTube Shorts" },
+    { path: "/youtube-playlist-downloader",   label: "YouTube playlists" },
+    { path: "/tiktok-downloader",             label: "TikTok downloader" },
+    { path: "/tiktok-no-watermark",           label: "TikTok (no watermark)" },
+    { path: "/tiktok-to-mp3",                 label: "TikTok to MP3" },
+    { path: "/instagram-reels-downloader",    label: "Instagram Reels" },
+    { path: "/instagram-video-downloader",    label: "Instagram videos" },
+    { path: "/instagram-story-downloader",    label: "Instagram Stories" },
+    { path: "/twitter-video-downloader",      label: "Twitter / X videos" },
+    { path: "/facebook-video-downloader",     label: "Facebook videos" },
+  ];
+  const others = ALL_TOOLS.filter((t) => t.path !== currentPath);
+  return `
+    <section class="seo-related">
+      <h3 class="seo-related-title">More <span class="it">Clip</span> tools</h3>
+      <div class="seo-related-grid">
+        ${others.map((t) => `<a class="seo-related-link" href="${t.path}">${t.label} <span aria-hidden="true">→</span></a>`).join("")}
+      </div>
+    </section>
+  `;
+};
 
 const HOWTO_JSON = (name, platform) => ({
   "@context": "https://schema.org",
@@ -401,6 +422,18 @@ const LANDING_PAGES = {
     platform: "youtube",
     format: "",
     seoContent: "",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Clip",
+      "applicationCategory": "MultimediaApplication",
+      "operatingSystem": "Web",
+      "offers": [
+        { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "EUR" },
+        { "@type": "Offer", "name": "Pro", "price": "4", "priceCurrency": "EUR" }
+      ],
+      "description": "Free downloader for YouTube, Instagram and TikTok videos. No signup, no watermark."
+    },
   },
   "/youtube": {
     title: "YouTube Video Downloader — Free, fast, no signup | Clip",
@@ -602,6 +635,172 @@ const LANDING_PAGES = {
       </section>
     `,
   },
+
+  "/youtube-playlist-downloader": {
+    title: "YouTube Playlist Downloader — Batch download every video | Clip",
+    description: "Download an entire YouTube playlist in one go — every video, in your chosen quality, MP4 or MP3. Pro feature on Clip.",
+    platform: "youtube",
+    format: "",
+    jsonLd: HOWTO_JSON("How to download a YouTube playlist", "YouTube"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Download a whole <span class="it">YouTube playlist</span> in one go</h2>
+        <p>Clip Pro queues every video in a playlist and downloads them in the background — perfect for archiving a course, saving a music album, or backing up a creator's channel before they take it offline.</p>
+        <ol>
+          <li>Open the playlist on YouTube and copy the URL (it starts with <code>https://www.youtube.com/playlist?list=</code>).</li>
+          <li>Paste the URL into the input above and click <strong>Get video</strong>.</li>
+          <li>Pick the format and quality you want for the whole playlist.</li>
+          <li>Click <strong>Download</strong>. Each video is fetched in sequence and saved to your Downloads folder.</li>
+        </ol>
+
+        <h3>Is there a limit on playlist size?</h3>
+        <p>Pro users can queue playlists of any size. Very long playlists (200+ videos) take longer to fetch — Clip processes them sequentially to avoid hammering YouTube's servers.</p>
+
+        <h3>Can I pick specific videos from a playlist?</h3>
+        <p>Yes. After fetching, Clip shows you the playlist contents with checkboxes — uncheck the videos you don't want before downloading.</p>
+
+        <h3>Free vs Pro for playlists</h3>
+        <p>The free tier downloads one video at a time. Playlist batch download is part of <a href="/#features">Clip Pro</a> — €4 per month, cancel any time.</p>
+
+        <h3>Related tools</h3>
+        <ul>
+          <li><a href="/youtube-to-mp3">YouTube to MP3</a> — extract audio from a single video.</li>
+          <li><a href="/youtube-to-mp4">YouTube to MP4</a> — save individual videos as MP4.</li>
+          <li><a href="/youtube-shorts-downloader">YouTube Shorts</a> — vertical video downloads.</li>
+        </ul>
+      </section>
+    `,
+  },
+
+  "/tiktok-to-mp3": {
+    title: "TikTok to MP3 — Save TikTok sounds as audio | Clip",
+    description: "Convert any TikTok video to MP3. Save sounds, music and audio clips for use in your own videos. Free, no signup, no watermark.",
+    platform: "tiktok",
+    format: "mp3",
+    jsonLd: HOWTO_JSON("How to convert a TikTok video to MP3", "TikTok"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Convert any <span class="it">TikTok to MP3</span></h2>
+        <p>Clip extracts the audio from any public TikTok video and saves it as a clean MP3 file. Useful for grabbing sounds you want to use in your own TikToks, saving original songs, or archiving viral audio before it disappears.</p>
+        <ol>
+          <li>Open the TikTok video and tap <strong>Share → Copy link</strong>.</li>
+          <li>Paste the link above and click <strong>Get video</strong>.</li>
+          <li>Pick <strong>Audio only (MP3)</strong> from the format grid.</li>
+          <li>Click <strong>Download</strong>. The MP3 saves to your Downloads folder.</li>
+        </ol>
+
+        <h3>What audio quality do I get?</h3>
+        <p>Clip pulls the highest-quality audio TikTok exposes for that video, then converts it to standard MP3 (typically 128–192 kbps). The audio is the original — not re-recorded or compressed extra times.</p>
+
+        <h3>Can I use TikTok sounds in my own videos?</h3>
+        <p>It depends on the source. TikTok's built-in sound library is licensed for use within TikTok. Re-uploading copyrighted audio elsewhere may infringe rights. Always check what you're using.</p>
+
+        <h3>Related tools</h3>
+        <ul>
+          <li><a href="/tiktok-downloader">TikTok video downloader</a> — full video, no watermark.</li>
+          <li><a href="/tiktok-no-watermark">TikTok without watermark</a> — clean MP4 export.</li>
+          <li><a href="/youtube-to-mp3">YouTube to MP3</a> — same MP3 extraction for YouTube.</li>
+        </ul>
+      </section>
+    `,
+  },
+
+  "/instagram-story-downloader": {
+    title: "Instagram Story Downloader — Save public stories | Clip",
+    description: "Download Instagram Stories from public accounts. No login, no watermark, original quality.",
+    platform: "instagram",
+    format: "",
+    jsonLd: HOWTO_JSON("How to download an Instagram story", "Instagram"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Download <span class="it">Instagram Stories</span> from public accounts</h2>
+        <p>Public Instagram Stories disappear after 24 hours. Clip lets you save them while they're still up — useful for archiving your own content, keeping a copy of an interview, or saving something a brand posted about you.</p>
+        <ol>
+          <li>Open the story on Instagram (web or mobile).</li>
+          <li>Tap the <strong>···</strong> menu on the story → <strong>Copy link</strong>.</li>
+          <li>Paste the link above and click <strong>Get video</strong>.</li>
+          <li>Pick MP4 (video stories) or MP3 (audio only) and download.</li>
+        </ol>
+
+        <h3>What about private accounts?</h3>
+        <p>Clip only works with publicly accessible content. Stories from private accounts can't be downloaded — that's how Instagram designs the privacy boundary, and we respect it.</p>
+
+        <h3>Will the account owner know?</h3>
+        <p>No. Unlike viewing a story directly through Instagram (which shows you in the viewer list), downloading a story link through Clip doesn't notify the creator.</p>
+
+        <h3>Related tools</h3>
+        <ul>
+          <li><a href="/instagram-reels-downloader">Instagram Reels downloader</a></li>
+          <li><a href="/instagram-video-downloader">All Instagram videos</a></li>
+          <li><a href="/instagram">Instagram homepage</a></li>
+        </ul>
+      </section>
+    `,
+  },
+
+  "/twitter-video-downloader": {
+    title: "Twitter / X Video Downloader — Free, fast, no signup | Clip",
+    description: "Download videos from Twitter (X) in their original quality. Free, no signup, no watermark.",
+    platform: "youtube",
+    format: "",
+    jsonLd: HOWTO_JSON("How to download a Twitter / X video", "Twitter"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Download videos from <span class="it">Twitter / X</span></h2>
+        <p>Twitter (now X) doesn't expose a download button on its videos. Clip pulls the underlying MP4 directly from the platform's CDN, so you can save the original file in its native quality.</p>
+        <ol>
+          <li>On Twitter / X, tap <strong>Share → Copy link</strong> on the post containing the video.</li>
+          <li>Paste the link into the input above and click <strong>Get video</strong>.</li>
+          <li>Pick a quality and click <strong>Download</strong>.</li>
+        </ol>
+
+        <h3>Does it work for old Twitter URLs (twitter.com vs x.com)?</h3>
+        <p>Yes. Clip handles both <code>twitter.com</code> and <code>x.com</code> URLs identically — the underlying media is the same.</p>
+
+        <h3>What about videos in replies and quote tweets?</h3>
+        <p>Works the same way — copy the URL of the specific tweet that has the video attached, even if it's a reply or quoted post.</p>
+
+        <h3>Related tools</h3>
+        <ul>
+          <li><a href="/youtube-to-mp4">YouTube downloader</a></li>
+          <li><a href="/tiktok-downloader">TikTok downloader</a></li>
+          <li><a href="/instagram-reels-downloader">Instagram Reels downloader</a></li>
+        </ul>
+      </section>
+    `,
+  },
+
+  "/facebook-video-downloader": {
+    title: "Facebook Video Downloader — Save FB videos in HD | Clip",
+    description: "Download videos from Facebook in HD. Public posts, Reels and watch videos — no signup, no watermark.",
+    platform: "youtube",
+    format: "",
+    jsonLd: HOWTO_JSON("How to download a Facebook video", "Facebook"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Download videos from <span class="it">Facebook</span></h2>
+        <p>Clip saves Facebook videos as standard MP4 files — public posts, Facebook Reels, Watch videos, and most embedded video content. The download is the source quality, not a re-encoded preview.</p>
+        <ol>
+          <li>Open the Facebook video and click the <strong>Share</strong> button → <strong>Copy link</strong>.</li>
+          <li>Paste the link into the input above and click <strong>Get video</strong>.</li>
+          <li>Pick a resolution and click <strong>Download</strong>.</li>
+        </ol>
+
+        <h3>Can I download videos from private groups?</h3>
+        <p>No. Clip only works with publicly accessible Facebook videos. Anything behind a login or in a private group can't be downloaded.</p>
+
+        <h3>What about live videos?</h3>
+        <p>You can download a Facebook Live broadcast after it ends and is saved to the page. Live streams in progress aren't supported.</p>
+
+        <h3>Related tools</h3>
+        <ul>
+          <li><a href="/youtube-to-mp4">YouTube downloader</a></li>
+          <li><a href="/twitter-video-downloader">Twitter / X downloader</a></li>
+          <li><a href="/instagram-video-downloader">Instagram downloader</a></li>
+        </ul>
+      </section>
+    `,
+  },
 };
 
 // Render the index template with the page-specific values substituted in.
@@ -615,11 +814,39 @@ function readIndex() {
 
 function renderPage(req, res, pageKey) {
   const cfg = LANDING_PAGES[pageKey] || LANDING_PAGES["/"];
-  const canonical = SITE_BASE
-    ? SITE_BASE.replace(/\/+$/, "") + pageKey
-    : `${req.protocol}://${req.get("host")}${pageKey}`;
-  const jsonLd = cfg.jsonLd
-    ? `<script type="application/ld+json">${JSON.stringify(cfg.jsonLd)}</script>`
+  const baseHost = SITE_BASE
+    ? SITE_BASE.replace(/\/+$/, "")
+    : `${req.protocol}://${req.get("host")}`;
+  const canonical = baseHost + pageKey;
+
+  const jsonLdBlocks = [];
+  if (cfg.jsonLd) jsonLdBlocks.push(cfg.jsonLd);
+
+  // Auto-add a BreadcrumbList for non-home pages so Google can show the
+  // breadcrumb in search results.
+  if (pageKey !== "/") {
+    const niceName = pageKey
+      .replace(/^\//, "")
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    jsonLdBlocks.push({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Clip", "item": baseHost + "/" },
+        { "@type": "ListItem", "position": 2, "name": niceName, "item": canonical },
+      ],
+    });
+  }
+
+  const jsonLd = jsonLdBlocks
+    .map((b) => `<script type="application/ld+json">${JSON.stringify(b)}</script>`)
+    .join("\n");
+
+  // Auto-append the Related Tools block to any page that has SEO content.
+  const seoContent = cfg.seoContent
+    ? cfg.seoContent + RELATED_TOOLS_BLOCK(pageKey)
     : "";
 
   const html = readIndex()
@@ -629,7 +856,7 @@ function renderPage(req, res, pageKey) {
     .replaceAll("{{JSON_LD}}", jsonLd)
     .replaceAll("{{DEFAULT_PLATFORM}}", cfg.platform || "")
     .replaceAll("{{DEFAULT_FORMAT}}", cfg.format || "")
-    .replaceAll("{{SEO_CONTENT}}", cfg.seoContent || "");
+    .replaceAll("{{SEO_CONTENT}}", seoContent);
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.send(html);

@@ -1107,6 +1107,49 @@
     .seo-faq-item h3 { margin: 0 0 8px; font-style: normal; font-family: var(--sans); font-size: 16px; font-weight: 600; }
     .seo-faq-item p { margin-bottom: 0; }
 
+    /* ---------- RELATED TOOLS GRID ---------- */
+    .seo-related {
+      max-width: 760px;
+      margin: 56px auto 0;
+      padding: 0 4px;
+    }
+    .seo-related-title {
+      font-family: var(--serif);
+      font-size: 26px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .seo-related-title .it { font-style: italic; color: var(--accent); }
+    .seo-related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 8px;
+    }
+    .seo-related-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .seo-related-link:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px -10px rgba(200,57,26,0.3);
+      color: var(--accent);
+    }
+    .seo-related-link span { color: var(--muted); transition: color 0.15s; }
+    .seo-related-link:hover span { color: var(--accent); }
+
     /* ---------- LENGTH LOCK PANEL ---------- */
     .length-lock {
       display: none;
