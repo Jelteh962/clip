@@ -1667,8 +1667,13 @@
   //   2. ADSTERRA_POPUNDER_KEY — from a Pop-under / OnClick ad zone.
   // Leave them empty to keep the styled placeholder while developing.
   // ===========================================================================
-  const ADSTERRA_BANNER_KEY   = '1dae44ab1bb5950cdd158497da7139ea'; // e.g. 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4'
-  const ADSTERRA_POPUNDER_KEY = 'c52b3dc6eea868b55a4ec70b5b2b9c8f'; // e.g. '1f2e3d4c5b6a1f2e3d4c5b6a1f2e3d4c'
+  const ADSTERRA_BANNER_KEY    = '1dae44ab1bb5950cdd158497da7139ea';
+  const ADSTERRA_POPUNDER_KEY  = 'c52b3dc6eea868b55a4ec70b5b2b9c8f';
+  // Social Bar takes the FULL src URL because the subdomain prefix (pl12345678)
+  // is unique per ad zone. Paste exactly what's inside src='...' from the
+  // Adsterra script tag — e.g.
+  //   '//pl12345678.profitableratecpm.com/2a50f57fe38d23d373569295e7f0e5a7/invoke.js'
+  const ADSTERRA_SOCIALBAR_SRC = '//pl29388458.profitablecpmratenetwork.com/2a/50/f5/2a50f57fe38d23d373569295e7f0e5a7.js';
 
   // Render an ad inside the modal slot. Called once per ad in the gate sequence.
   function injectAd(containerId) {
@@ -1705,6 +1710,31 @@
       <p>Add your Adsterra banner key at the top of the script and this slot will fill with real ads.</p>
     `;
   }
+
+  // Inject the Social Bar once per page load. Gated behind cookie consent so
+  // it only fires for users who accepted ads.
+  let socialBarLoaded = false;
+  function loadSocialBar() {
+    if (socialBarLoaded || !ADSTERRA_SOCIALBAR_SRC) return;
+    if (cookieConsent() !== 'accepted') return;
+    socialBarLoaded = true;
+    const s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.src = ADSTERRA_SOCIALBAR_SRC;
+    s.async = true;
+    s.setAttribute('data-cfasync', 'false');
+    document.body.appendChild(s);
+  }
+
+  // Try at DOM ready; also re-try right after the user clicks Accept on the
+  // cookie banner, so the bar appears immediately for first-time visitors.
+  document.addEventListener('DOMContentLoaded', loadSocialBar);
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'cookieAccept') {
+      // setCookieConsent fires synchronously; queue this for the next tick.
+      setTimeout(loadSocialBar, 0);
+    }
+  });
 
   // Fire a pop-under once per download (separate revenue stream).
   // Called from startDownload() before the gate, so the new tab opens during
