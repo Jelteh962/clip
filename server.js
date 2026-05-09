@@ -68,18 +68,15 @@ function pickProxy() {
 
 // Common args we want on every yt-dlp invocation (formats + download).
 function ytCommonArgs() {
+  // Kept minimal: --user-agent and --force-ipv4 were causing YouTube's bot
+  // detection to flag requests even with valid cookies + proxy attached.
+  // The /api/test-proxy endpoint succeeds with this minimal set, so we use
+  // the same minimal set everywhere now.
   const args = [
     "--no-playlist",
     "--no-warnings",
-    "--retries", "5",
-    "--fragment-retries", "5",
-    "--force-ipv4", // YT's bot scoring is harsher on IPv6 datacenter ranges
-    "--geo-bypass",
-    // With cookies loaded the default client mix works best. Without cookies,
-    // we rely on yt-dlp picking sensible fallbacks.
+    "--retries", "3",
     "--extractor-args", "youtube:player_client=default",
-    "--user-agent",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
   ];
   if (COOKIES_AVAILABLE) {
     args.push("--cookies", COOKIES_PATH);
