@@ -690,6 +690,17 @@
     }
     .go-pro-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 22px -8px rgba(26,24,20,0.5); }
     .go-pro-btn svg { color: #F4D58D; }
+    /* Pro-active variant of the same button — same shape, green pulse */
+    #proBadge { color: #C5F0D6; border-color: rgba(111,232,166,0.3); }
+    .pro-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #6FE8A6;
+      box-shadow: 0 0 0 4px rgba(111,232,166,0.18);
+      animation: pulse 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
 
     /* ---------- LOCKED FORMAT ---------- */
     .format-card.locked { opacity: 0.65; }
@@ -1437,7 +1448,10 @@
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="/faq">FAQ</a>
-      <span class="nav-badge" id="proBadge" style="display:none">Pro active</span>
+      <button class="go-pro-btn" id="proBadge" type="button" style="display:none" onclick="openProModal()">
+        <span class="pro-pulse"></span>
+        Manage Pro
+      </button>
       <button class="go-pro-btn" id="goProBtn" type="button" onclick="openProModal()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 9.2 8.6 2 9.5l5.4 4.7L5.8 22 12 18.3 18.2 22l-1.6-7.8L22 9.5l-7.2-.9L12 2z"/></svg>
         Go Pro
