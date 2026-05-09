@@ -8,7 +8,7 @@
 
 // Change this to your real Clip domain when you deploy.
 // http://localhost:3000 works during local development.
-const CLIP_URL = 'http://localhost:3000';
+const CLIP_URL = 'https://clipexports.com';
 
 // Patterns that mean "this is a watchable video page" per platform.
 // We don't want to show the button on the YouTube homepage, the Instagram
