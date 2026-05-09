@@ -386,7 +386,6 @@ const RELATED_TOOLS_BLOCK = (currentPath) => {
     { path: "/youtube-to-mp3",                label: "YouTube to MP3" },
     { path: "/youtube-to-mp4",                label: "YouTube to MP4" },
     { path: "/youtube-shorts-downloader",     label: "YouTube Shorts" },
-    { path: "/youtube-playlist-downloader",   label: "YouTube playlists" },
     { path: "/tiktok-downloader",             label: "TikTok downloader" },
     { path: "/tiktok-no-watermark",           label: "TikTok (no watermark)" },
     { path: "/tiktok-to-mp3",                 label: "TikTok to MP3" },
@@ -484,7 +483,7 @@ const LANDING_PAGES = {
         <p>Most YouTube to MP3 sites bury the download link under fake buttons, redirect you through ad pages, or cap your file size. Clip shows you exactly what you're getting, runs two short ads (which keep the service free), and saves the file straight to your device.</p>
 
         <h3>Can I convert YouTube playlists or whole channels?</h3>
-        <p>Batch playlist and channel conversion is part of <a href="/#features">Clip Pro</a>. For €4/month you can paste a playlist URL and queue every video as MP3 in one click.</p>
+        <p>Not yet — Clip handles one video at a time right now. Playlist support is on our roadmap. For now, paste each video URL one by one.</p>
 
         <h3>Is converting YouTube to MP3 legal?</h3>
         <p>It depends on the content and your country. Downloading copyrighted music for personal listening is permitted in many jurisdictions but redistributing it is almost never permitted. Always check the platform's terms and your local copyright law.</p>
@@ -535,7 +534,7 @@ const LANDING_PAGES = {
         <p>Shorts download as MP4 in their original vertical (9:16) aspect ratio — perfect for re-uploading to TikTok or Instagram Reels, or saving to your camera roll.</p>
 
         <h3>Can I download multiple Shorts at once?</h3>
-        <p>Yes — <a href="/#features">Clip Pro</a> includes batch downloads. Paste a channel URL and grab every Short in one click.</p>
+        <p>Not yet — batch downloads are on our roadmap. For now, paste each Short's URL one at a time.</p>
       </section>
     `,
   },
@@ -637,42 +636,6 @@ const LANDING_PAGES = {
 
         <h3>Why do some Instagram links not work?</h3>
         <p>Two reasons: the post is from a private account (we can't access those), or Instagram has rate-limited the IP. Wait a minute and try again, or try a different video.</p>
-      </section>
-    `,
-  },
-
-  "/youtube-playlist-downloader": {
-    title: "YouTube Playlist Downloader — Batch download every video | Clip",
-    description: "Download an entire YouTube playlist in one go — every video, in your chosen quality, MP4 or MP3. Pro feature on Clip.",
-    platform: "youtube",
-    format: "",
-    jsonLd: HOWTO_JSON("How to download a YouTube playlist", "YouTube"),
-    seoContent: `
-      <section class="seo-content">
-        <h2>Download a whole <span class="it">YouTube playlist</span> in one go</h2>
-        <p>Clip Pro queues every video in a playlist and downloads them in the background — perfect for archiving a course, saving a music album, or backing up a creator's channel before they take it offline.</p>
-        <ol>
-          <li>Open the playlist on YouTube and copy the URL (it starts with <code>https://www.youtube.com/playlist?list=</code>).</li>
-          <li>Paste the URL into the input above and click <strong>Get video</strong>.</li>
-          <li>Pick the format and quality you want for the whole playlist.</li>
-          <li>Click <strong>Download</strong>. Each video is fetched in sequence and saved to your Downloads folder.</li>
-        </ol>
-
-        <h3>Is there a limit on playlist size?</h3>
-        <p>Pro users can queue playlists of any size. Very long playlists (200+ videos) take longer to fetch — Clip processes them sequentially to avoid hammering YouTube's servers.</p>
-
-        <h3>Can I pick specific videos from a playlist?</h3>
-        <p>Yes. After fetching, Clip shows you the playlist contents with checkboxes — uncheck the videos you don't want before downloading.</p>
-
-        <h3>Free vs Pro for playlists</h3>
-        <p>The free tier downloads one video at a time. Playlist batch download is part of <a href="/#features">Clip Pro</a> — €4 per month, cancel any time.</p>
-
-        <h3>Related tools</h3>
-        <ul>
-          <li><a href="/youtube-to-mp3">YouTube to MP3</a> — extract audio from a single video.</li>
-          <li><a href="/youtube-to-mp4">YouTube to MP4</a> — save individual videos as MP4.</li>
-          <li><a href="/youtube-shorts-downloader">YouTube Shorts</a> — vertical video downloads.</li>
-        </ul>
       </section>
     `,
   },
@@ -828,7 +791,7 @@ const LANDING_PAGES = {
         <h2 style="margin-top:48px">Frequently <span class="it">asked</span></h2>
         <div class="seo-faq-item">
           <h3>Does the extension download videos itself, or does it use the website?</h3>
-          <p>It opens the video in the Clip website. We do this on purpose — it means the same Pro features (4K, batch downloads, no ads) work in the extension, and you don't end up with two separate accounts to manage.</p>
+          <p>It opens the video in the Clip website. We do this on purpose — it means the same Pro features (4K, no ads) work in the extension, and you don't end up with two separate accounts to manage.</p>
         </div>
         <div class="seo-faq-item">
           <h3>Will it work on Edge / Brave / Opera?</h3>
