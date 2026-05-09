@@ -66,6 +66,46 @@ function pickProxy() {
   return PROXIES[Math.floor(Math.random() * PROXIES.length)];
 }
 
+// =============================================================================
+// URL sanitisation
+// =============================================================================
+// YouTube URLs that include &list= or &start_radio= push yt-dlp toward the
+// "radio playlist" extractor, which is more heavily bot-walled than the plain
+// video extractor. We normalise YouTube links to the canonical
+// https://www.youtube.com/watch?v=<ID> form before passing them to yt-dlp.
+// Other platforms (TikTok, Instagram) are passed through unchanged.
+// =============================================================================
+function sanitizeUrl(raw) {
+  if (!raw || typeof raw !== "string") return raw;
+  const url = raw.trim();
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+
+    // youtu.be/<id>
+    if (host === "youtu.be") {
+      const id = u.pathname.split("/").filter(Boolean)[0];
+      if (id) return `https://www.youtube.com/watch?v=${id}`;
+    }
+
+    // youtube.com / m.youtube.com / music.youtube.com
+    if (host.endsWith("youtube.com")) {
+      // /shorts/<id>
+      const shortsMatch = u.pathname.match(/^\/shorts\/([^/?]+)/);
+      if (shortsMatch) return `https://www.youtube.com/watch?v=${shortsMatch[1]}`;
+      // /embed/<id>
+      const embedMatch = u.pathname.match(/^\/embed\/([^/?]+)/);
+      if (embedMatch) return `https://www.youtube.com/watch?v=${embedMatch[1]}`;
+      // /watch?v=<id>
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/watch?v=${v}`;
+    }
+  } catch (e) {
+    // Not a parseable URL — let yt-dlp handle it
+  }
+  return url;
+}
+
 // Common args we want on every yt-dlp invocation (formats + download).
 function ytCommonArgs() {
   // Kept minimal: --user-agent and --force-ipv4 were causing YouTube's bot
@@ -149,7 +189,7 @@ app.get("/api/test-proxy", (req, res) => {
 
 // Get available formats for a video
 app.post("/api/formats", (req, res) => {
-  const { url } = req.body;
+  const url = sanitizeUrl(req.body && req.body.url);
   if (!url) return res.status(400).json({ error: "URL required" });
 
   execFile(
@@ -240,7 +280,8 @@ app.post("/api/formats", (req, res) => {
 
 // Download endpoint
 app.get("/api/download", (req, res) => {
-  const { url, format_id, label, ext } = req.query;
+  const { format_id, label, ext } = req.query;
+  const url = sanitizeUrl(req.query.url);
   if (!url || !format_id) return res.status(400).json({ error: "Missing params" });
 
   const tmpDir = os.tmpdir();
