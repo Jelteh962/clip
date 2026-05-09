@@ -2425,6 +2425,34 @@
   document.getElementById('urlInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') fetchFormats();
   });
+
+  // ---------- URL prefill (from Chrome extension or share links) ----------
+  // The extension opens https://clip.app/?url=<encoded video URL>&from=ext
+  // We pre-fill the input and auto-trigger Get video so the user lands on
+  // the format grid immediately without an extra click.
+  (function autoPrefillFromQuery() {
+    const params = new URLSearchParams(window.location.search);
+    const prefill = params.get('url');
+    if (!prefill) return;
+
+    const input = document.getElementById('urlInput');
+    if (input) input.value = prefill;
+
+    // Make sure the platform tab matches if we can guess from the URL.
+    const lower = prefill.toLowerCase();
+    if (/instagram\.com/.test(lower))      setPlatform('instagram', { push: false });
+    else if (/tiktok\.com/.test(lower))    setPlatform('tiktok',    { push: false });
+    else                                    setPlatform('youtube',   { push: false });
+
+    // Strip the query so a refresh doesn't re-trigger the fetch.
+    if (window.history && window.history.replaceState) {
+      const cleanUrl = window.location.pathname + window.location.hash;
+      window.history.replaceState({}, '', cleanUrl);
+    }
+
+    // Kick off the fetch after a tick so all other init code has run.
+    setTimeout(fetchFormats, 50);
+  })();
 </script>
 </body>
 </html>

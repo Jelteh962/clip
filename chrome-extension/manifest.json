@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Clip — YouTube, Instagram & TikTok Downloader",
+  "name": "Clip — YouTube, Instagram, TikTok Downloader",
   "short_name": "Clip",
-  "version": "1.0.0",
-  "description": "One-click downloads from YouTube, Instagram and TikTok. 4K, MP3, no watermark.",
+  "version": "1.1.0",
+  "description": "One-click video downloads. Adds a Download button to YouTube, Instagram, TikTok, Twitter and Facebook.",
   "author": "Clip",
   "action": {
     "default_title": "Clip — Download this video",
@@ -27,10 +27,29 @@
     "https://*.youtu.be/*",
     "https://*.instagram.com/*",
     "https://*.tiktok.com/*",
+    "https://*.twitter.com/*",
+    "https://*.x.com/*",
+    "https://*.facebook.com/*",
     "http://localhost:3000/*",
     "https://YOUR-DOMAIN.com/*"
   ],
   "background": {
     "service_worker": "background.js"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.youtube.com/*",
+        "https://*.youtu.be/*",
+        "https://*.instagram.com/*",
+        "https://*.tiktok.com/*",
+        "https://*.twitter.com/*",
+        "https://*.x.com/*",
+        "https://*.facebook.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
 }

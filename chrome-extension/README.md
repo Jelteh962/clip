@@ -1,29 +1,34 @@
 # Clip — Chrome Extension
 
-Paid Chrome extension companion to the Clip web downloader.
+Two ways to use the extension:
 
-## Architecture
+1. **One-click button on every video page.** A floating "Download" button appears in the bottom-right corner of YouTube, Instagram, TikTok, Twitter/X and Facebook video pages. Click → opens Clip in a new tab with the URL pre-filled and the fetch already started.
+2. **Toolbar popup.** Click the Clip icon in your Chrome toolbar to paste any URL manually (same flow as the website).
 
-The extension is a thin client over the Express backend in `../server.js`.
-When the user clicks the toolbar icon, the popup:
+Both routes funnel users back to the Clip site so ads and Pro upsells still fire — the extension is a traffic driver, not a way to bypass monetization.
 
-1. Reads the active tab's URL (if it's YouTube/Instagram/TikTok, pre-fills it).
-2. Calls `BACKEND_URL/api/formats` to list available qualities.
-3. Streams `BACKEND_URL/api/download` and uses `chrome.downloads.download(...)`
-   to save the file straight to the user's Downloads folder — no extra browser tab.
+## Files
 
-Pro state (4K + HQ unlock) is persisted in `chrome.storage.local`.
+| File             | What it does                                                                |
+|------------------|-----------------------------------------------------------------------------|
+| `manifest.json`  | MV3 manifest. Lists supported sites and permissions.                        |
+| `content.js`     | Injects the floating Download button on supported pages.                    |
+| `content.css`    | Scoped styles for the button — uses `!important` to defeat host-page CSS.   |
+| `popup.html`     | Toolbar popup UI (paste-a-URL flow).                                        |
+| `popup.js`       | Popup logic.                                                                |
+| `background.js`  | Service worker — minimal, kept for future hooks.                            |
+| `icons/`         | 16/32/48/128 px PNG icons (you need to add these).                          |
 
 ## Configure before publishing
 
-Open `popup.js` and `manifest.json` and replace:
+Edit two constants:
 
-| Placeholder                              | What to set it to                                        |
-|------------------------------------------|----------------------------------------------------------|
-| `BACKEND_URL` (popup.js)                 | Your hosted server, e.g. `https://clip.yourdomain.com`   |
-| `CHECKOUT_URL` (popup.js)                | Your Lemon Squeezy checkout link                         |
-| `https://YOUR-DOMAIN.com/*` (manifest)   | Your hosted server origin                                |
-| `VALID_LICENSES` (popup.js)              | Replace with a real `/api/verify-license` server check   |
+| File          | Constant         | Set to                                              |
+|---------------|------------------|------------------------------------------------------|
+| `content.js`  | `CLIP_URL`       | Your hosted Clip site, e.g. `https://clip.app`     |
+| `popup.js`    | `BACKEND_URL`    | Same as above                                        |
+| `popup.js`    | `CHECKOUT_URL`   | Your Lemon Squeezy checkout URL                      |
+| `manifest.json` | `host_permissions` | Replace `https://YOUR-DOMAIN.com/*` with your real one |
 
 ## Icons
 
@@ -34,45 +39,32 @@ Add four PNGs to `icons/` (omitted from this scaffold):
 - `icons/icon48.png` — 48×48
 - `icons/icon128.png` — 128×128
 
-## Load locally for testing
+Quick way: take your favicon, run it through [realfavicongenerator.net](https://realfavicongenerator.net), use the Chrome Extension preset.
+
+## Test locally
 
 1. Open `chrome://extensions`.
-2. Toggle **Developer mode** (top right).
+2. Toggle **Developer mode** (top-right).
 3. Click **Load unpacked** and pick this `chrome-extension/` folder.
-4. Run `node server.js` from the project root so `BACKEND_URL=http://localhost:3000` works.
-5. Pin the extension and click the icon while on a YouTube video.
+4. Visit a YouTube video — the red Download button should appear in the bottom-right corner. Click it.
+5. A new tab opens at `http://localhost:3000/?url=…` (assuming Clip is running locally) with the URL pre-filled and the format grid already loading.
 
 ## Publishing to the Chrome Web Store
 
-> Heads up: the Chrome Web Store removed paid extensions in 2020. You can't charge
-> for the extension itself anymore — distribute it free and gate Pro features
-> behind your own license check (Lemon Squeezy → license key → activated in popup).
-
 1. Bundle the folder into a zip.
-2. Pay the one-time $5 developer fee at the [Chrome Web Store dashboard](https://chrome.google.com/webstore/devconsole/).
-3. Upload the zip, fill in screenshots and copy.
-4. Submit for review (typically 1–3 days).
-5. After approval, link the extension's listing from your website's Pro modal.
+2. Pay the one-time $5 developer fee at [Chrome Web Store dashboard](https://chrome.google.com/webstore/devconsole/).
+3. Upload the zip; fill in screenshots, copy and the privacy policy URL (use `https://yourdomain.com/privacy`).
+4. Submit for review (typically 1–3 days for content scripts, since Google reviews them more carefully).
 
-## Server-side license verification (next step)
+### What to put in the listing
 
-When you're ready to lock things down properly, replace the in-popup `VALID_LICENSES`
-set with a server endpoint:
-
-```js
-// server.js
-app.post('/api/verify-license', async (req, res) => {
-  const key = req.body.key;
-  // Hit Lemon Squeezy's License API: https://docs.lemonsqueezy.com/api/license-api
-  const r = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', {
-    method: 'POST',
-    headers: { 'Accept': 'application/json' },
-    body: new URLSearchParams({ license_key: key })
-  });
-  const data = await r.json();
-  res.json({ valid: !!data.valid });
-});
-```
-
-Then have `popup.js` call `${BACKEND_URL}/api/verify-license` instead of checking
-the local set.
+- **Name:** Clip — One-Click Video Downloader
+- **Short description (132 chars):** "Add a Download button to YouTube, Instagram, TikTok, Twitter & Facebook. One click → MP4 or MP3 in seconds."
+- **Category:** Productivity
+- **Language:** English (you can add more later)
+- **Privacy policy URL:** `https://yourdomain.com/privacy`
+- **Permissions justification:**
+  - `activeTab` / `tabs` — to read the URL of the page the user is currently on so the Download button knows what to download.
+  - `host_permissions` for the supported sites — to inject the button on those sites only.
+  - `storage` — to remember the user's Pro license key so they don't have to re-enter it.
+  - `downloads` — used by the popup flow to save files to the user's Downloads folder.
