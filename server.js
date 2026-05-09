@@ -34,6 +34,38 @@ if (process.env.YT_COOKIES_BASE64) {
   }
 }
 
+// =============================================================================
+// Webshare residential proxy pool
+// =============================================================================
+// YT_PROXY_LIST env var format — one proxy per line:
+//   host:port:user:pass
+//   host:port:user:pass
+//   ...
+// We pick a random proxy per yt-dlp call so requests are spread across all IPs
+// and a single flagged IP doesn't take the service down.
+// =============================================================================
+const PROXIES = [];
+if (process.env.YT_PROXY_LIST) {
+  const lines = process.env.YT_PROXY_LIST.split(/\r?\n/);
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    const parts = line.split(":");
+    if (parts.length !== 4) {
+      console.warn("[clip] skipping malformed proxy line:", line);
+      continue;
+    }
+    const [host, port, user, pass] = parts;
+    PROXIES.push(`http://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}`);
+  }
+  console.log(`[clip] Loaded ${PROXIES.length} proxies from YT_PROXY_LIST`);
+}
+
+function pickProxy() {
+  if (!PROXIES.length) return null;
+  return PROXIES[Math.floor(Math.random() * PROXIES.length)];
+}
+
 // Common args we want on every yt-dlp invocation (formats + download).
 function ytCommonArgs() {
   const args = [
@@ -52,6 +84,10 @@ function ytCommonArgs() {
   if (COOKIES_AVAILABLE) {
     args.push("--cookies", COOKIES_PATH);
   }
+  const proxy = pickProxy();
+  if (proxy) {
+    args.push("--proxy", proxy);
+  }
   return args;
 }
 
@@ -61,7 +97,7 @@ app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
     cookiesLoaded: COOKIES_AVAILABLE,
-    cookiesPath: COOKIES_AVAILABLE ? COOKIES_PATH : null,
+    proxyCount: PROXIES.length,
     nodeVersion: process.version,
   });
 });
