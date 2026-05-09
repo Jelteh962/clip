@@ -188,94 +188,102 @@ app.get("/api/test-proxy", (req, res) => {
 });
 
 // Get available formats for a video
-app.post("/api/formats", (req, res) => {
+app.post("/api/formats", async (req, res) => {
   const url = sanitizeUrl(req.body && req.body.url);
   if (!url) return res.status(400).json({ error: "URL required" });
 
-  execFile(
-    "yt-dlp",
-    [...ytCommonArgs(), "--dump-json", url],
-    { timeout: 30000, maxBuffer: 32 * 1024 * 1024 },
-    (err, stdout, stderr) => {
-      if (err) {
-        // Surface the real yt-dlp message so we can see what's actually wrong
-        // (e.g. YouTube bot challenge, Instagram login wall, network timeout).
-        const detail = (stderr || err.message || "").toString().trim().split("\n").slice(-3).join(" | ").slice(0, 500);
-        console.error("[yt-dlp] formats failed:", detail);
-        return res.status(400).json({
-          error: detail || "Could not fetch video info.",
-        });
-      }
-      try {
-        const info = JSON.parse(stdout);
-        const formats = info.formats || [];
+  // Retry up to 3 times — each attempt gets a fresh random proxy.
+  // Handles "Video unavailable" (region-blocked proxy IP) and intermittent
+  // bot challenges by giving us another shot from a different IP.
+  const MAX_TRIES = 3;
+  let lastDetail = "";
+  let stdout = "";
 
-        // Build clean format list
-        const seen = new Set();
-        const videoFormats = [];
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    const result = await new Promise((resolve) => {
+      execFile(
+        "yt-dlp",
+        [...ytCommonArgs(), "--dump-json", url],
+        { timeout: 30000, maxBuffer: 32 * 1024 * 1024 },
+        (err, _stdout, stderr) => resolve({ err, stdout: _stdout, stderr })
+      );
+    });
+    if (!result.err) { stdout = result.stdout; lastDetail = ""; break; }
+    lastDetail = (result.stderr || result.err.message || "").toString().trim().split("\n").slice(-3).join(" | ").slice(0, 500);
+    console.warn(`[yt-dlp] formats attempt ${attempt}/${MAX_TRIES} failed:`, lastDetail);
+  }
 
-        // Add combined formats (video+audio)
-        formats
-          .filter((f) => f.vcodec !== "none" && f.acodec !== "none" && f.height)
-          .sort((a, b) => (b.height || 0) - (a.height || 0))
-          .forEach((f) => {
-            const key = `${f.height}p`;
-            if (!seen.has(key)) {
-              seen.add(key);
-              videoFormats.push({
-                format_id: f.format_id,
-                label: `${f.height}p`,
-                height: f.height,
-                ext: f.ext,
-                filesize: f.filesize || f.filesize_approx || null,
-                type: "video",
-              });
-            }
+  if (lastDetail) {
+    return res.status(400).json({ error: lastDetail || "Could not fetch video info." });
+  }
+
+  // Parse the JSON yt-dlp gave us into our normalised format list.
+  try {
+    const info = JSON.parse(stdout);
+    const formats = info.formats || [];
+    const seen = new Set();
+    const videoFormats = [];
+
+    // Combined formats (video+audio)
+    formats
+      .filter((f) => f.vcodec !== "none" && f.acodec !== "none" && f.height)
+      .sort((a, b) => (b.height || 0) - (a.height || 0))
+      .forEach((f) => {
+        const key = `${f.height}p`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          videoFormats.push({
+            format_id: f.format_id,
+            label: `${f.height}p`,
+            height: f.height,
+            ext: f.ext,
+            filesize: f.filesize || f.filesize_approx || null,
+            type: "video",
           });
+        }
+      });
 
-        // Add best video formats (video-only, merged with audio)
-        formats
-          .filter((f) => f.vcodec !== "none" && f.acodec === "none" && f.height)
-          .sort((a, b) => (b.height || 0) - (a.height || 0))
-          .forEach((f) => {
-            const key = `${f.height}p-hq`;
-            if (!seen.has(key) && !seen.has(`${f.height}p`)) {
-              seen.add(key);
-              videoFormats.push({
-                format_id: `${f.format_id}+bestaudio`,
-                label: `${f.height}p (HQ)`,
-                height: f.height,
-                ext: "mp4",
-                filesize: null,
-                type: "video",
-              });
-            }
+    // Video-only formats merged with best audio
+    formats
+      .filter((f) => f.vcodec !== "none" && f.acodec === "none" && f.height)
+      .sort((a, b) => (b.height || 0) - (a.height || 0))
+      .forEach((f) => {
+        const key = `${f.height}p-hq`;
+        if (!seen.has(key) && !seen.has(`${f.height}p`)) {
+          seen.add(key);
+          videoFormats.push({
+            format_id: `${f.format_id}+bestaudio`,
+            label: `${f.height}p (HQ)`,
+            height: f.height,
+            ext: "mp4",
+            filesize: null,
+            type: "video",
           });
+        }
+      });
 
-        // Audio only
-        videoFormats.push({
-          format_id: "bestaudio",
-          label: "Audio only (MP3)",
-          height: 0,
-          ext: "mp3",
-          filesize: null,
-          type: "audio",
-        });
+    // Audio-only entry
+    videoFormats.push({
+      format_id: "bestaudio",
+      label: "Audio only (MP3)",
+      height: 0,
+      ext: "mp3",
+      filesize: null,
+      type: "audio",
+    });
 
-        videoFormats.sort((a, b) => b.height - a.height);
+    videoFormats.sort((a, b) => b.height - a.height);
 
-        res.json({
-          title: info.title,
-          thumbnail: info.thumbnail,
-          duration: info.duration,
-          uploader: info.uploader,
-          formats: videoFormats,
-        });
-      } catch (e) {
-        res.status(500).json({ error: "Failed to parse video info." });
-      }
-    }
-  );
+    res.json({
+      title: info.title,
+      thumbnail: info.thumbnail,
+      duration: info.duration,
+      uploader: info.uploader,
+      formats: videoFormats,
+    });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to parse video info." });
+  }
 });
 
 // Download endpoint
