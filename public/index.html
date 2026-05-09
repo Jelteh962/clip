@@ -1,14 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
+  <!-- Google tag (gtag.js) — GDPR Consent Mode v2 -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2K5FZQVF98"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
+  // Default ALL signals to "denied" until the user clicks Accept.
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'functionality_storage': 'granted',
+    'security_storage': 'granted',
+    'wait_for_update': 500
+  });
+  // Restore stored choice from previous visit.
+  try {
+    const c = localStorage.getItem('clip_cookie_consent');
+    if (c === 'accepted') {
+      gtag('consent', 'update', {
+        'ad_storage': 'granted',
+        'ad_user_data': 'granted',
+        'ad_personalization': 'granted',
+        'analytics_storage': 'granted'
+      });
+    }
+  } catch (e) {}
   gtag('js', new Date());
-
-  gtag('config', 'G-2K5FZQVF98');
+  gtag('config', 'G-2K5FZQVF98', { anonymize_ip: true });
 </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -1062,6 +1083,96 @@
     .top-error strong { display: block; margin-bottom: 4px; font-weight: 600; }
     .top-error code { font-family: var(--mono); font-size: 11px; background: rgba(140,42,20,0.08); padding: 1px 5px; border-radius: 3px; }
 
+    /* ---------- COOKIE CONSENT BANNER ---------- */
+    .cookie-banner {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 18px 22px;
+      background: #1A1814;
+      color: #F4D58D;
+      border-radius: 16px;
+      box-shadow: 0 24px 60px -20px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 1500;
+      transform: translateY(120%);
+      animation: cookieIn 0.45s cubic-bezier(.2,.8,.2,1) forwards;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .cookie-banner.visible { display: block; }
+    @keyframes cookieIn {
+      to { transform: translateY(0); }
+    }
+
+    .cookie-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .cookie-text {
+      flex: 1 1 280px;
+      min-width: 220px;
+    }
+    .cookie-text strong {
+      display: block;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 2px;
+      font-weight: 400;
+    }
+    .cookie-text p {
+      margin: 0;
+      color: rgba(244,213,141,0.75);
+    }
+    .cookie-text a {
+      color: #F4D58D;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(244,213,141,0.4);
+    }
+    .cookie-text a:hover { border-bottom-color: #F4D58D; }
+
+    .cookie-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .cookie-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 9px;
+      font-family: var(--sans);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .cookie-btn.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .cookie-btn.primary:hover { background: var(--accent-2); }
+    .cookie-btn.ghost {
+      background: transparent;
+      color: #F4D58D;
+      border: 1px solid rgba(244,213,141,0.3);
+    }
+    .cookie-btn.ghost:hover { background: rgba(244,213,141,0.08); }
+    .cookie-btn:active { transform: scale(0.98); }
+
+    @media (max-width: 520px) {
+      .cookie-banner { padding: 16px 18px; }
+      .cookie-actions { width: 100%; justify-content: flex-end; }
+      .cookie-actions .cookie-btn { flex: 1 1 auto; }
+    }
+
     /* ---------- AD GATE ---------- */
     .ad-modal {
       max-width: 640px;
@@ -1374,7 +1485,12 @@
 
   <footer>
     <span>Clip v1.1 — Powered by yt-dlp</span>
-    <span>YouTube · Instagram · TikTok</span>
+    <span class="footer-links">
+      <a href="/faq">FAQ</a> ·
+      <a href="/privacy">Privacy</a> ·
+      <a href="/terms">Terms</a> ·
+      <a href="/dmca">DMCA</a>
+    </span>
   </footer>
 </div>
 
@@ -1449,6 +1565,20 @@
   </div>
 </div>
 
+<!-- ---------- COOKIE CONSENT BANNER ---------- -->
+<div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite" aria-label="Cookie consent">
+  <div class="cookie-row">
+    <div class="cookie-text">
+      <strong>We use cookies.</strong>
+      <p>To run analytics and serve ads on the free tier. Read our <a href="/privacy">privacy policy</a>. Pro users see no ads either way.</p>
+    </div>
+    <div class="cookie-actions">
+      <button class="cookie-btn ghost" type="button" id="cookieReject">Necessary only</button>
+      <button class="cookie-btn primary" type="button" id="cookieAccept">Accept all</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ---------- Platform routing ----------
   const PLATFORMS = {
@@ -1498,6 +1628,38 @@
   setPlatform(platformFromPath(), { push: false });
 
   // ===========================================================================
+  // COOKIE CONSENT
+  // ===========================================================================
+  // Stored as 'accepted' or 'rejected' in localStorage.clip_cookie_consent.
+  // Until 'accepted', we don't load Adsterra and Google Analytics is in
+  // Consent Mode v2 default = denied (set in <head>).
+  // ===========================================================================
+  function cookieConsent() {
+    try { return localStorage.getItem('clip_cookie_consent'); } catch (e) { return null; }
+  }
+  function setCookieConsent(value) {
+    try { localStorage.setItem('clip_cookie_consent', value); } catch (e) {}
+    document.getElementById('cookieBanner').classList.remove('visible');
+    if (value === 'accepted' && typeof gtag === 'function') {
+      gtag('consent', 'update', {
+        'ad_storage': 'granted',
+        'ad_user_data': 'granted',
+        'ad_personalization': 'granted',
+        'analytics_storage': 'granted'
+      });
+    }
+  }
+
+  // Show banner on load if no choice has been made yet.
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!cookieConsent()) {
+      document.getElementById('cookieBanner').classList.add('visible');
+    }
+    document.getElementById('cookieAccept').addEventListener('click', () => setCookieConsent('accepted'));
+    document.getElementById('cookieReject').addEventListener('click', () => setCookieConsent('rejected'));
+  });
+
+  // ===========================================================================
   // AD NETWORK INTEGRATION
   // ===========================================================================
   // To go live with Adsterra, you'll fill in two things below:
@@ -1514,7 +1676,8 @@
     if (!slot) return;
     slot.innerHTML = '';
 
-    if (ADSTERRA_BANNER_KEY) {
+    // Don't load the ad network unless the user has consented to ad cookies.
+    if (ADSTERRA_BANNER_KEY && cookieConsent() === 'accepted') {
       // Adsterra Banner (Iframe Banner 300x250).
       // Their snippet is two script tags: one defines atOptions, the other
       // loads invoke.js. We inject the equivalent dynamically so it runs
@@ -1549,6 +1712,7 @@
   let popunderLoaded = false;
   function triggerPopUnder() {
     if (!ADSTERRA_POPUNDER_KEY || popunderLoaded) return;
+    if (cookieConsent() !== 'accepted') return; // Respect consent
     popunderLoaded = true;
     const s = document.createElement('script');
     s.type = 'text/javascript';

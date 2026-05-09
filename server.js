@@ -519,12 +519,17 @@ app.get("/faq", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "faq.html"));
 });
 
+// Legal pages (static)
+app.get("/privacy", (_req, res) => res.sendFile(path.join(__dirname, "public", "privacy.html")));
+app.get("/terms",   (_req, res) => res.sendFile(path.join(__dirname, "public", "terms.html")));
+app.get("/dmca",    (_req, res) => res.sendFile(path.join(__dirname, "public", "dmca.html")));
+
 // Sitemap.xml
 app.get("/sitemap.xml", (req, res) => {
   const base = SITE_BASE
     ? SITE_BASE.replace(/\/+$/, "")
     : `${req.protocol}://${req.get("host")}`;
-  const urls = [...Object.keys(LANDING_PAGES), "/faq"];
+  const urls = [...Object.keys(LANDING_PAGES), "/faq", "/privacy", "/terms", "/dmca"];
   const today = new Date().toISOString().split("T")[0];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

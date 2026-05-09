@@ -1,0 +1,136 @@
+/* Shared styles for /privacy, /terms, /dmca */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F4F1EC; --bg-2: #EDE7DC; --surface: #fff; --border: #D8D4CC;
+  --text: #1A1814; --muted: #8A8680; --accent: #C8391A; --accent-2: #E5613A;
+  --accent-light: #F5EAE7; --success: #2D6A4F;
+  --mono: 'DM Mono', monospace; --serif: 'Instrument Serif', serif; --sans: 'Inter', system-ui, sans-serif;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1000; opacity: 0.5;
+}
+
+.page {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 0;
+}
+.logo { display: flex; align-items: baseline; gap: 10px; text-decoration: none; }
+.logo-text { font-family: var(--serif); font-size: 32px; font-style: italic; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.logo-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: 0.7; } }
+.nav-links { display: flex; align-items: center; gap: 24px; font-size: 13px; }
+.nav-links a { color: var(--muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+.nav-links a:hover { color: var(--text); }
+
+.legal-hero {
+  padding: 64px 0 36px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 36px;
+}
+.legal-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.legal-hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(40px, 7vw, 64px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.legal-hero h1 .it { font-style: italic; color: var(--accent); }
+.legal-hero p {
+  color: var(--muted);
+  font-size: 17px;
+  max-width: 520px;
+}
+
+main.legal {
+  padding-bottom: 80px;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #2A2622;
+}
+main.legal h2 {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 40px 0 12px;
+  line-height: 1.2;
+}
+main.legal h3 {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 22px 0 6px;
+}
+main.legal p { margin-bottom: 14px; }
+main.legal a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(200,57,26,0.3);
+}
+main.legal a:hover { border-bottom-color: var(--accent); }
+main.legal ul, main.legal ol { margin: 0 0 18px 22px; }
+main.legal li { margin-bottom: 6px; }
+main.legal strong { color: var(--text); font-weight: 600; }
+main.legal code {
+  font-family: var(--mono);
+  font-size: 13px;
+  background: var(--bg-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+footer {
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
+footer a:hover { color: var(--text); }
+
+@media (max-width: 640px) {
+  .legal-hero { padding: 48px 0 28px; }
+  .legal-hero p { font-size: 15px; }
+  main.legal h2 { font-size: 24px; }
+}
