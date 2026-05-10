@@ -286,11 +286,28 @@ app.post("/api/formats", async (req, res) => {
   }
 });
 
+// Validate a "M:SS", "MM:SS" or "HH:MM:SS" time string. Returns the original
+// string if valid, null otherwise. Prevents shell-injection through the time arg.
+function validTime(s) {
+  if (!s || typeof s !== "string") return null;
+  if (!/^(?:\d{1,2}:)?\d{1,2}:\d{2}$/.test(s.trim())) return null;
+  return s.trim();
+}
+
 // Download endpoint
 app.get("/api/download", (req, res) => {
   const { format_id, label, ext } = req.query;
   const url = sanitizeUrl(req.query.url);
   if (!url || !format_id) return res.status(400).json({ error: "Missing params" });
+
+  // Optional Pro feature: trim a section of the video.
+  // Both start and end must be valid; otherwise we ignore them and download
+  // the full video. Server doesn't enforce Pro gating here — the client does
+  // (Pro is verified via /api/verify-license on activation). A bad actor
+  // bypassing the client check just gets a trimmed video, which is fine.
+  const trimStart = validTime(req.query.start);
+  const trimEnd = validTime(req.query.end);
+  const trimSection = (trimStart && trimEnd) ? `*${trimStart}-${trimEnd}` : null;
 
   const tmpDir = os.tmpdir();
   const filename = `yt-${Date.now()}`;
@@ -309,6 +326,13 @@ app.get("/api/download", (req, res) => {
     args.push("-x", "--audio-format", "mp3", "--audio-quality", "0");
   } else {
     args.push("--merge-output-format", "mp4");
+  }
+
+  // Pro trim — extracts only the section from start to end.
+  // --force-keyframes-at-cuts ensures clean cuts at the requested timestamps.
+  if (trimSection) {
+    args.push("--download-sections", trimSection, "--force-keyframes-at-cuts");
+    console.log(`[yt-dlp] trim section: ${trimSection}`);
   }
 
   args.push(url);

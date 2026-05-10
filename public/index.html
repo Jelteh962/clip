@@ -1424,6 +1424,137 @@
     .length-lock-cta:hover { background: var(--accent-2); }
     .length-lock-cta:active { transform: scale(0.99); }
 
+    /* ---------- TRIM SECTION (Pro feature) ---------- */
+    .trim-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 18px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .trim-toggle:hover { border-color: var(--text); }
+    .trim-toggle.active { border-color: var(--accent); background: var(--accent-light); }
+    .trim-toggle.locked { opacity: 0.85; }
+    .trim-toggle-icon {
+      width: 28px; height: 28px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg-2);
+      border-radius: 8px;
+      color: var(--accent);
+    }
+    .trim-toggle.active .trim-toggle-icon { background: var(--accent); color: #fff; }
+    .trim-toggle-label { flex: 1; text-align: left; }
+    .trim-toggle-label strong { display: block; font-weight: 600; margin-bottom: 2px; }
+    .trim-toggle-label span { font-size: 11.5px; color: var(--muted); font-family: var(--mono); letter-spacing: 0.04em; }
+    .trim-toggle-pro {
+      padding: 3px 8px;
+      background: #1A1814;
+      color: #F4D58D;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .trim-toggle-chev {
+      flex-shrink: 0;
+      color: var(--muted);
+      transition: transform 0.2s;
+    }
+    .trim-toggle.active .trim-toggle-chev { transform: rotate(180deg); }
+
+    .trim-panel {
+      display: none;
+      padding: 18px 20px 20px;
+      margin-top: -10px;
+      margin-bottom: 18px;
+      background: var(--accent-light);
+      border: 1px solid rgba(200,57,26,0.2);
+      border-radius: 12px;
+      animation: slideDown 0.25s ease-out;
+    }
+    .trim-panel.visible { display: block; }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .trim-row {
+      display: flex;
+      gap: 14px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+    .trim-field { flex: 1; min-width: 110px; }
+    .trim-field label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .trim-field input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      letter-spacing: 0.04em;
+    }
+    .trim-field input:focus { border-color: var(--accent); }
+    .trim-field input.invalid { border-color: var(--accent); background: rgba(200,57,26,0.04); }
+
+    .trim-stats {
+      flex-shrink: 0;
+      padding: 11px 14px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-width: 96px;
+      text-align: center;
+    }
+    .trim-stats-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .trim-stats-value {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 18px;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+
+    .trim-help {
+      margin-top: 12px;
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .trim-help.error { color: var(--accent); }
+
     /* ---------- TOP-LEVEL ERROR ---------- */
     .top-error {
       max-width: 720px;
@@ -1810,6 +1941,36 @@
         <p class="section-label" id="formatsLabel">Choose format</p>
         <div class="formats-grid" id="formatsGrid"></div>
 
+        <button class="trim-toggle" id="trimToggle" type="button" onclick="toggleTrim()">
+          <div class="trim-toggle-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+          </div>
+          <div class="trim-toggle-label">
+            <strong>Trim a section</strong>
+            <span id="trimToggleSub">Download just part of the video</span>
+          </div>
+          <span class="trim-toggle-pro" id="trimToggleProTag">Pro</span>
+          <svg class="trim-toggle-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+
+        <div class="trim-panel" id="trimPanel">
+          <div class="trim-row">
+            <div class="trim-field">
+              <label for="trimStart">Start (mm:ss)</label>
+              <input id="trimStart" type="text" placeholder="0:00" autocomplete="off" inputmode="numeric"/>
+            </div>
+            <div class="trim-field">
+              <label for="trimEnd">End (mm:ss)</label>
+              <input id="trimEnd" type="text" placeholder="0:00" autocomplete="off" inputmode="numeric"/>
+            </div>
+            <div class="trim-stats">
+              <div class="trim-stats-label">Length</div>
+              <div class="trim-stats-value" id="trimDuration">—</div>
+            </div>
+          </div>
+          <p class="trim-help" id="trimHelp">Pick the start and end time of the section you want. The download will only contain that part — perfect for grabbing a specific clip.</p>
+        </div>
+
         <div class="download-section">
           <button class="download-btn" id="downloadBtn" onclick="startDownload()" disabled>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6M3 21h18"/></svg>
@@ -1941,8 +2102,8 @@
         <ul class="plan-features">
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>1080p · 4K · 60fps · HDR</li>
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Skip every ad · instant downloads</li>
+          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Trim a section — grab just the part you need</li>
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>No 15-minute length cap — download any length</li>
-          <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Works in the Chrome extension too</li>
           <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Priority email support</li>
         </ul>
         <a class="plan-cta" id="checkoutLink" href="#" target="_blank" rel="noopener">Upgrade — €4/mo</a>
@@ -2204,6 +2365,9 @@
     }
     document.getElementById('proBadge').style.display = on ? 'inline-flex' : 'none';
     document.getElementById('goProBtn').style.display = on ? 'none' : 'inline-flex';
+    // Hide the Pro tag on the trim toggle for Pro users (they have access)
+    const proTag = document.getElementById('trimToggleProTag');
+    if (proTag) proTag.style.display = on ? 'none' : 'inline-block';
     renderProModalContent();
     if (videoData) renderCard(videoData);
   }
@@ -2520,6 +2684,9 @@
       platform: (PLATFORMS[platformFromPath()] || {}).word || '',
     });
 
+    // Reset trim panel state for the new video
+    resetTrimPanel();
+
     document.getElementById('videoMeta').innerHTML = `
       ${data.thumbnail ? `<img class="video-thumb" src="${data.thumbnail}" alt="" onerror="this.style.display='none'">` : ''}
       <div class="video-info">
@@ -2635,6 +2802,13 @@
       ext: selectedFormat.ext
     });
 
+    // Pro trim — append start/end if user has the trim panel open + valid range
+    const trim = getTrimParams();
+    if (trim) {
+      params.set('start', trim.start);
+      params.set('end', trim.end);
+    }
+
     const evtSource = new EventSource(`/api/download?${params}`);
 
     evtSource.onmessage = (e) => {
@@ -2682,6 +2856,97 @@
   document.getElementById('urlInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') fetchFormats();
   });
+
+  // ---------- Trim section (Pro feature) ----------
+  // Parse "1:30" / "M:SS" / "MM:SS" / "HH:MM:SS" → seconds (or NaN if invalid)
+  function parseTime(s) {
+    if (!s) return NaN;
+    const parts = String(s).trim().split(':').map(Number);
+    if (parts.some(isNaN)) return NaN;
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return NaN;
+  }
+  // Inverse: 90 → "1:30"
+  function formatTime(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  }
+
+  function toggleTrim() {
+    // Free users: clicking opens Pro modal instead of expanding.
+    if (!isPro()) {
+      openProModal();
+      return;
+    }
+    const toggle = document.getElementById('trimToggle');
+    const panel = document.getElementById('trimPanel');
+    const open = !panel.classList.contains('visible');
+    panel.classList.toggle('visible', open);
+    toggle.classList.toggle('active', open);
+    if (open && videoData && videoData.duration) {
+      // Pre-fill end with full duration on first open
+      const endInput = document.getElementById('trimEnd');
+      if (!endInput.value) endInput.value = formatTime(videoData.duration);
+      const startInput = document.getElementById('trimStart');
+      if (!startInput.value) startInput.value = '0:00';
+      updateTrimDuration();
+    }
+  }
+
+  function updateTrimDuration() {
+    const startEl = document.getElementById('trimStart');
+    const endEl = document.getElementById('trimEnd');
+    const dur = document.getElementById('trimDuration');
+    const help = document.getElementById('trimHelp');
+
+    const startSec = parseTime(startEl.value);
+    const endSec = parseTime(endEl.value);
+    const max = videoData ? videoData.duration : Infinity;
+
+    startEl.classList.toggle('invalid', startEl.value && (isNaN(startSec) || startSec < 0 || startSec > max));
+    endEl.classList.toggle('invalid', endEl.value && (isNaN(endSec) || endSec <= 0 || endSec > max));
+
+    if (isNaN(startSec) || isNaN(endSec)) { dur.textContent = '—'; help.classList.remove('error'); return; }
+    if (endSec <= startSec) {
+      dur.textContent = '—';
+      help.textContent = 'End time must be after start time.';
+      help.classList.add('error');
+      return;
+    }
+    dur.textContent = formatTime(endSec - startSec);
+    help.textContent = `Downloading ${formatTime(endSec - startSec)} of the original video.`;
+    help.classList.remove('error');
+  }
+
+  document.getElementById('trimStart').addEventListener('input', updateTrimDuration);
+  document.getElementById('trimEnd').addEventListener('input', updateTrimDuration);
+
+  // Reset trim panel when a new video loads
+  function resetTrimPanel() {
+    document.getElementById('trimPanel').classList.remove('visible');
+    document.getElementById('trimToggle').classList.remove('active');
+    document.getElementById('trimStart').value = '';
+    document.getElementById('trimEnd').value = '';
+    document.getElementById('trimDuration').textContent = '—';
+    const help = document.getElementById('trimHelp');
+    help.textContent = 'Pick the start and end time of the section you want. The download will only contain that part — perfect for grabbing a specific clip.';
+    help.classList.remove('error');
+  }
+
+  // Returns { start, end } strings if trim is enabled & valid, else null
+  function getTrimParams() {
+    if (!isPro()) return null;
+    if (!document.getElementById('trimPanel').classList.contains('visible')) return null;
+    const startStr = document.getElementById('trimStart').value.trim();
+    const endStr = document.getElementById('trimEnd').value.trim();
+    const startSec = parseTime(startStr);
+    const endSec = parseTime(endStr);
+    if (isNaN(startSec) || isNaN(endSec) || endSec <= startSec) return null;
+    return { start: startStr, end: endStr };
+  }
 
   // ---------- Recent history (localStorage, no server cost) ----------
   const RECENT_KEY = 'clip_recent_v1';
