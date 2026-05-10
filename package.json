@@ -4,6 +4,7 @@
   "description": "Clip — download videos from YouTube, Instagram and TikTok.",
   "main": "server.js",
   "scripts": {
+      "build": "pip install -U yt-dlp",
     "start": "node server.js",
     "dev": "node server.js"
   },

@@ -19,7 +19,9 @@ const VIDEO_URL_PATTERNS = [
   /youtu\.be\//,
   /tiktok\.com\/@[^/]+\/video\//,
   /tiktok\.com\/v\//,
-  /instagram\.com\/(reel|p|tv|stories)\//,
+  // Instagram: optional username in path before the section. Trailing slash
+  // optional. Accepts reel / reels (plural) / p / tv / stories.
+  /instagram\.com\/(?:[^/]+\/)?(reel|reels|p|tv|stories)(?:\/|$)/,
   /(twitter|x)\.com\/[^/]+\/status\//,
   /facebook\.com\/(watch|reel|.+\/videos\/)/,
 ];
@@ -92,11 +94,23 @@ syncButton();
   window.addEventListener('popstate', () => setTimeout(syncButton, 100));
 })();
 
-// Some platforms (Instagram in particular) re-render the body without changing
-// the URL. Watch for body mutations and re-inject if our button got nuked.
-const observer = new MutationObserver(() => {
-  if (isVideoPage() && !document.getElementById('clip-download-fab')) {
-    injectButton();
+// SPA URL change tracking: YouTube / Instagram / TikTok all change `location.href`
+// without firing pushState in a way our patcher catches reliably. Poll the URL
+// and run syncButton whenever it changes.
+let lastHref = location.href;
+setInterval(() => {
+  if (location.href !== lastHref) {
+    lastHref = location.href;
+    syncButton();
   }
+}, 400);
+
+// Some platforms re-render the body without changing the URL. Watch for body
+// mutations and re-inject if our button got nuked, or remove it if we're no
+// longer on a video page.
+let mutationDebounce;
+const observer = new MutationObserver(() => {
+  clearTimeout(mutationDebounce);
+  mutationDebounce = setTimeout(syncButton, 200);
 });
 observer.observe(document.body, { childList: true, subtree: true });

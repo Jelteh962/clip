@@ -11,28 +11,52 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"), { index: false }));
 
 // =============================================================================
-// YouTube cookies bypass
+// Per-platform cookies bypass
 // =============================================================================
-// YouTube blocks datacenter IPs ("Sign in to confirm you're not a bot").
-// We work around that by passing yt-dlp a cookies file from a logged-in browser
-// session. Set YT_COOKIES_BASE64 in your Railway service variables to a base64
-// blob of a Netscape cookies.txt file. We decode it once at startup.
+// YouTube, TikTok and Instagram all increasingly require auth on datacenter IPs.
+// We work around this by passing yt-dlp a cookies file built from logged-in
+// sessions. Each platform gets its own env var so you can refresh them
+// independently when one expires:
+//   YT_COOKIES_BASE64  — youtube.com cookies (Netscape format, base64)
+//   TT_COOKIES_BASE64  — tiktok.com cookies
+//   IG_COOKIES_BASE64  — instagram.com cookies
+// We combine whatever's present into one /tmp/cookies.txt at startup.
+// yt-dlp matches cookies to the request domain automatically, so combined is fine.
 // =============================================================================
-const COOKIES_PATH = path.join(os.tmpdir(), "yt-cookies.txt");
+const COOKIES_PATH = path.join(os.tmpdir(), "cookies.txt");
+const COOKIES_LOADED = { youtube: false, tiktok: false, instagram: false };
 let COOKIES_AVAILABLE = false;
 
-if (process.env.YT_COOKIES_BASE64) {
-  try {
-    fs.writeFileSync(
-      COOKIES_PATH,
-      Buffer.from(process.env.YT_COOKIES_BASE64, "base64").toString("utf8")
-    );
-    COOKIES_AVAILABLE = true;
-    console.log("[clip] YT cookies loaded from env (" + COOKIES_PATH + ")");
-  } catch (e) {
-    console.error("[clip] Failed to decode YT_COOKIES_BASE64:", e.message);
+(function loadCookies() {
+  const sources = [
+    { env: "YT_COOKIES_BASE64", platform: "youtube" },
+    { env: "TT_COOKIES_BASE64", platform: "tiktok" },
+    { env: "IG_COOKIES_BASE64", platform: "instagram" },
+  ];
+  const parts = ["# Netscape HTTP Cookie File", "# Combined by Clip server", ""];
+  for (const src of sources) {
+    if (!process.env[src.env]) continue;
+    try {
+      const raw = Buffer.from(process.env[src.env], "base64").toString("utf8");
+      // Strip duplicate netscape header lines, keep cookie data
+      const stripped = raw.replace(/^# Netscape HTTP Cookie File[\s\S]*?(?=^[^#]|^$)/m, "").trim();
+      if (stripped) {
+        parts.push(`# --- ${src.platform} ---`);
+        parts.push(stripped);
+        parts.push("");
+        COOKIES_LOADED[src.platform] = true;
+        console.log(`[clip] ${src.platform} cookies loaded from ${src.env}`);
+      }
+    } catch (e) {
+      console.error(`[clip] Failed to decode ${src.env}:`, e.message);
+    }
   }
-}
+  COOKIES_AVAILABLE = Object.values(COOKIES_LOADED).some(Boolean);
+  if (COOKIES_AVAILABLE) {
+    fs.writeFileSync(COOKIES_PATH, parts.join("\n"));
+    console.log(`[clip] Combined cookies file written to ${COOKIES_PATH}`);
+  }
+})();
 
 // =============================================================================
 // Webshare residential proxy pool

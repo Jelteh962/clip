@@ -1,25 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Clip — YouTube, Instagram, TikTok Downloader",
+  "name": "Clip — One-Click Video Downloader",
   "short_name": "Clip",
-  "version": "1.1.0",
-  "description": "One-click video downloads. Adds a Download button to YouTube, Instagram, TikTok, Twitter and Facebook.",
+  "version": "1.1.1",
+  "description": "Adds a Download button to popular video sites. Save in MP4 or MP3 with one click. No watermark, no signup.",
   "author": "Clip",
   "action": {
     "default_title": "Clip — Download this video",
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
-  "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "default_popup": "popup.html"
   },
   "permissions": ["storage", "activeTab", "tabs", "downloads"],
   "host_permissions": [
@@ -31,7 +19,7 @@
     "https://*.x.com/*",
     "https://*.facebook.com/*",
     "http://localhost:3000/*",
-    "https://YOUR-DOMAIN.com/*"
+    "https://clipexports.com/*"
   ],
   "background": {
     "service_worker": "background.js"
