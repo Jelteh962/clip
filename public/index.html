@@ -391,6 +391,34 @@
     .fetch-btn:active { transform: scale(0.98); }
     .fetch-btn:disabled { opacity: 0.5; cursor: not-allowed; background: var(--text); box-shadow: none; }
 
+    .paste-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 14px;
+      background: var(--bg-2);
+      color: var(--text);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 12.5px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, transform 0.1s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-right: 4px;
+    }
+    .paste-btn:hover { background: var(--border); color: var(--accent); }
+    .paste-btn:active { transform: scale(0.97); }
+    .paste-btn.success { background: rgba(45,106,79,0.12); color: var(--success); }
+    .paste-btn svg { color: inherit; }
+    @media (max-width: 520px) {
+      .paste-btn-label { display: none; }
+      .paste-btn { padding: 10px 12px; }
+    }
+
     .loading-bar {
       height: 2px;
       background: transparent;
@@ -1252,6 +1280,91 @@
     .seo-related-link span { color: var(--muted); transition: color 0.15s; }
     .seo-related-link:hover span { color: var(--accent); }
 
+    /* ---------- RECENT HISTORY STRIP ---------- */
+    .recent-strip {
+      max-width: 720px;
+      margin: 36px auto 0;
+      padding: 0 4px;
+      display: none;
+    }
+    .recent-strip.visible { display: block; }
+    .recent-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+    .recent-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .recent-clear {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      transition: color 0.15s;
+    }
+    .recent-clear:hover { color: var(--accent); }
+    .recent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+    }
+    .recent-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s;
+      width: 100%;
+      font-family: inherit;
+    }
+    .recent-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px -10px rgba(200,57,26,0.3);
+    }
+    .recent-thumb {
+      width: 56px;
+      height: 32px;
+      object-fit: cover;
+      border-radius: 4px;
+      background: var(--bg-2);
+      flex-shrink: 0;
+    }
+    .recent-info { min-width: 0; flex: 1; }
+    .recent-vid-title {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+    .recent-platform {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
     /* ---------- LENGTH LOCK PANEL ---------- */
     .length-lock {
       display: none;
@@ -1643,6 +1756,10 @@
               spellcheck="false"
             />
           </div>
+          <button class="paste-btn" id="pasteBtn" type="button" title="Paste from clipboard" aria-label="Paste from clipboard" onclick="pasteFromClipboard()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></svg>
+            <span class="paste-btn-label">Paste</span>
+          </button>
           <button class="fetch-btn" id="fetchBtn" onclick="fetchFormats()">
             <span id="fetchBtnLabel">Get video</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
@@ -1664,6 +1781,14 @@
           <span>Chrome extension — download in 1 click</span>
           <span class="ext-hint-arrow" aria-hidden="true">→</span>
         </a>
+      </div>
+
+      <div class="recent-strip" id="recentStrip">
+        <div class="recent-head">
+          <span class="recent-title">Pick up where you left off</span>
+          <button class="recent-clear" id="recentClear" type="button">Clear</button>
+        </div>
+        <div class="recent-grid" id="recentGrid"></div>
       </div>
     </section>
 
@@ -1749,7 +1874,7 @@
   </main>
 
   <footer>
-    <span>Clip v1.1 — Powered by yt-dlp</span>
+    <span>Clip v1.1</span>
     <span class="footer-links">
       <a href="/chrome-extension">Chrome extension</a> ·
       <a href="/faq">FAQ</a> ·
@@ -2386,6 +2511,14 @@
   }
 
   function renderCard(data) {
+    // Save to recent history (localStorage only — no server cost).
+    pushRecent({
+      url: document.getElementById('urlInput').value.trim(),
+      title: data.title,
+      thumbnail: data.thumbnail,
+      platform: (PLATFORMS[platformFromPath()] || {}).word || '',
+    });
+
     document.getElementById('videoMeta').innerHTML = `
       ${data.thumbnail ? `<img class="video-thumb" src="${data.thumbnail}" alt="" onerror="this.style.display='none'">` : ''}
       <div class="video-info">
@@ -2548,6 +2681,92 @@
   document.getElementById('urlInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') fetchFormats();
   });
+
+  // ---------- Recent history (localStorage, no server cost) ----------
+  const RECENT_KEY = 'clip_recent_v1';
+  const RECENT_MAX = 5;
+
+  function loadRecent() {
+    try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch { return []; }
+  }
+  function saveRecent(list) {
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch {}
+  }
+  function pushRecent(item) {
+    if (!item || !item.url) return;
+    const list = loadRecent().filter(x => x.url !== item.url);
+    list.unshift({
+      url: item.url,
+      title: (item.title || 'Untitled').slice(0, 100),
+      thumbnail: item.thumbnail || '',
+      platform: item.platform || '',
+      ts: Date.now(),
+    });
+    saveRecent(list.slice(0, RECENT_MAX));
+    renderRecent();
+  }
+  function renderRecent() {
+    const strip = document.getElementById('recentStrip');
+    const grid = document.getElementById('recentGrid');
+    const list = loadRecent();
+    if (!list.length) { strip.classList.remove('visible'); return; }
+    grid.innerHTML = list.map((it) => `
+      <button class="recent-card" data-url="${escapeAttr(it.url)}">
+        ${it.thumbnail ? `<img class="recent-thumb" src="${escapeAttr(it.thumbnail)}" alt="" onerror="this.style.display='none'">` : '<div class="recent-thumb"></div>'}
+        <div class="recent-info">
+          <div class="recent-vid-title">${escapeText(it.title)}</div>
+          <div class="recent-platform">${escapeText(it.platform || '')}</div>
+        </div>
+      </button>
+    `).join('');
+    strip.classList.add('visible');
+    grid.querySelectorAll('.recent-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const url = btn.getAttribute('data-url');
+        const input = document.getElementById('urlInput');
+        if (input) input.value = url;
+        fetchFormats();
+        document.querySelector('.url-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+  }
+  function escapeAttr(s) { return String(s || '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+  function escapeText(s) { return String(s || '').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+  document.getElementById('recentClear').addEventListener('click', () => {
+    saveRecent([]);
+    renderRecent();
+  });
+
+  renderRecent();
+
+  // ---------- Paste from clipboard ----------
+  async function pasteFromClipboard() {
+    const btn = document.getElementById('pasteBtn');
+    const input = document.getElementById('urlInput');
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      // Older browsers without async clipboard — focus input so user can Ctrl+V manually.
+      input.focus();
+      return;
+    }
+    try {
+      const text = (await navigator.clipboard.readText()).trim();
+      if (!text) { input.focus(); return; }
+      input.value = text;
+      // Brief visual confirmation
+      btn.classList.add('success');
+      setTimeout(() => btn.classList.remove('success'), 900);
+      // Auto-fetch only if it actually looks like a URL we can handle.
+      if (/^https?:\/\/.+\.(com|net|org|io|app|co|me|tv|gl|be)/i.test(text)) {
+        fetchFormats();
+      } else {
+        input.focus();
+      }
+    } catch (e) {
+      // User denied clipboard permission or browser blocked it — focus input
+      input.focus();
+    }
+  }
 
   // ---------- Extension promotion ----------
   // Skip the hero "New" badge if the user is already on the extension page
