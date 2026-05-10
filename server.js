@@ -394,6 +394,10 @@ const RELATED_TOOLS_BLOCK = (currentPath) => {
     { path: "/instagram-story-downloader",    label: "Instagram Stories" },
     { path: "/twitter-video-downloader",      label: "Twitter / X videos" },
     { path: "/facebook-video-downloader",     label: "Facebook videos" },
+    { path: "/reddit-video-downloader",       label: "Reddit videos" },
+    { path: "/vimeo-downloader",              label: "Vimeo videos" },
+    { path: "/soundcloud-to-mp3",             label: "SoundCloud to MP3" },
+    { path: "/twitch-clip-downloader",        label: "Twitch clips" },
     { path: "/chrome-extension",              label: "Chrome extension" },
   ];
   const others = ALL_TOOLS.filter((t) => t.path !== currentPath);
@@ -805,6 +809,128 @@ const LANDING_PAGES = {
           <h3>Does YouTube ban accounts that use this?</h3>
           <p>No. The extension doesn't sign you into YouTube or interact with your YouTube account in any way. It just reads the URL of the video page you're already viewing.</p>
         </div>
+      </section>
+    `,
+  },
+
+  "/reddit-video-downloader": {
+    title: "Reddit Video Downloader — With sound, no fuss | Clip",
+    description: "Download Reddit videos with audio in their original quality. Reddit's native download is silent — Clip merges the video and audio streams properly.",
+    platform: "youtube",
+    format: "",
+    jsonLd: HOWTO_JSON("How to download a Reddit video", "Reddit"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Download <span class="it">Reddit videos</span> with audio</h2>
+        <p>Reddit hosts videos on a domain called <code>v.redd.it</code> and stores the video and audio as <strong>separate streams</strong>. That's why Reddit's own "Save" button gives you a silent video — the audio never gets attached. Clip merges both streams properly so the file you save actually has sound.</p>
+        <ol>
+          <li>Open the Reddit post containing the video.</li>
+          <li>Tap <strong>Share → Copy link</strong> on the post (works for new Reddit, old Reddit, mobile, and Reddit apps).</li>
+          <li>Paste the link into the input above and click <strong>Get video</strong>.</li>
+          <li>Pick a quality and click <strong>Download</strong>. You'll get a single MP4 with video + audio merged.</li>
+        </ol>
+
+        <h3>Does it work for crossposts and old Reddit URLs?</h3>
+        <p>Yes — Clip handles <code>reddit.com</code>, <code>old.reddit.com</code>, <code>v.redd.it</code> direct links, and crosspost URLs. The underlying video file is the same regardless of which URL form you paste.</p>
+
+        <h3>Why does Reddit's own "Save" button drop the audio?</h3>
+        <p>Reddit serves video and audio as separate HLS streams to save bandwidth. Their built-in download grabs only the video stream because muxing the two server-side would cost them money. Clip does the merge client-side via FFmpeg.</p>
+
+        <h3>What about NSFW or quarantined subreddits?</h3>
+        <p>Public videos in those subreddits work as long as the URL is publicly accessible. Subreddits requiring a login won't.</p>
+      </section>
+    `,
+  },
+
+  "/vimeo-downloader": {
+    title: "Vimeo Downloader — Save Vimeo videos in HD | Clip",
+    description: "Download public Vimeo videos in their original HD quality. Free, no signup, no watermark. Works for short films, tutorials, and creator portfolios.",
+    platform: "youtube",
+    format: "",
+    jsonLd: HOWTO_JSON("How to download a Vimeo video", "Vimeo"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Download videos from <span class="it">Vimeo</span></h2>
+        <p>Vimeo doesn't expose a download button on most videos — creators have to explicitly enable it, and most don't. Clip pulls the underlying MP4 directly from Vimeo's CDN so you can save the original file.</p>
+        <ol>
+          <li>Open the Vimeo video page.</li>
+          <li>Copy the URL from your browser's address bar (it'll look like <code>vimeo.com/123456789</code>).</li>
+          <li>Paste into the input above and click <strong>Get video</strong>.</li>
+          <li>Vimeo videos often have higher resolution than YouTube — pick the quality that fits your use.</li>
+        </ol>
+
+        <h3>Vimeo quality is usually high — why?</h3>
+        <p>Vimeo skews toward filmmakers, designers and professional creators who upload from high-end cameras. A typical Vimeo upload is 1080p at minimum, often 4K. That's also why Vimeo files are larger than equivalent-length YouTube videos.</p>
+
+        <h3>Can I download password-protected or private Vimeo videos?</h3>
+        <p>No. Clip only works with publicly accessible content. Password-protected and members-only videos require Vimeo authentication, which Clip respects.</p>
+
+        <h3>What about Vimeo Showcase / Vimeo OTT?</h3>
+        <p>If the showcase is public, the underlying videos can be downloaded one at a time using each video's individual URL. Paid OTT content (Vimeo's Netflix-style platform) cannot be downloaded.</p>
+      </section>
+    `,
+  },
+
+  "/soundcloud-to-mp3": {
+    title: "SoundCloud to MP3 — Save tracks as MP3 | Clip",
+    description: "Convert any public SoundCloud track to MP3 in seconds. Free, no signup, original audio quality.",
+    platform: "youtube",
+    format: "mp3",
+    jsonLd: HOWTO_JSON("How to convert a SoundCloud track to MP3", "SoundCloud"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Convert <span class="it">SoundCloud</span> tracks to MP3</h2>
+        <p>SoundCloud only lets artists offer downloads if they've enabled it for their track — and most don't. Clip pulls the audio stream directly from SoundCloud's CDN and saves it as a clean MP3 you can play anywhere.</p>
+        <ol>
+          <li>Open the SoundCloud track in a browser.</li>
+          <li>Click <strong>Share → Copy link</strong> (or just copy the URL from the address bar).</li>
+          <li>Paste it into the input above and click <strong>Get video</strong>.</li>
+          <li>The MP3 option is pre-selected for SoundCloud links — click <strong>Download</strong>.</li>
+        </ol>
+
+        <h3>What audio quality do I get?</h3>
+        <p>Clip extracts the highest-quality stream SoundCloud exposes for that track — typically 128 kbps MP3 for free uploads, up to 256 kbps for SoundCloud Pro accounts.</p>
+
+        <h3>Can I download private or paid tracks?</h3>
+        <p>No. Clip only works with publicly playable tracks. Private tracks, secret links, and paid downloads can't be accessed without SoundCloud authentication.</p>
+
+        <h3>What about full SoundCloud playlists or sets?</h3>
+        <p>Currently we handle one track at a time. Paste the URL of the specific track you want.</p>
+
+        <h3>Is this fair to the artist?</h3>
+        <p>If a track is publicly playable on SoundCloud, the artist has chosen to share it freely. Downloading it for personal listening is generally fine; redistributing or monetising it isn't. Support artists you like by following them, sharing, and buying their releases on platforms like Bandcamp.</p>
+      </section>
+    `,
+  },
+
+  "/twitch-clip-downloader": {
+    title: "Twitch Clip Downloader — Save streamer clips | Clip",
+    description: "Download Twitch clips in their original quality. Save your favorite streamer moments, your own clips, or anything you want to re-edit.",
+    platform: "youtube",
+    format: "",
+    jsonLd: HOWTO_JSON("How to download a Twitch clip", "Twitch"),
+    seoContent: `
+      <section class="seo-content">
+        <h2>Download <span class="it">Twitch clips</span></h2>
+        <p>Twitch clips are short highlights pulled from a longer livestream — usually 30 seconds, sometimes up to 60. Clip saves them as standard MP4 files, perfect for re-uploading to TikTok or YouTube Shorts, archiving your favourite moments, or editing into compilations.</p>
+        <ol>
+          <li>Open the Twitch clip in a browser (URLs look like <code>clips.twitch.tv/SomeClipName</code> or <code>twitch.tv/{streamer}/clip/{name}</code>).</li>
+          <li>Copy the URL from the address bar.</li>
+          <li>Paste it into the input above and click <strong>Get video</strong>.</li>
+          <li>Pick a quality and download.</li>
+        </ol>
+
+        <h3>Can I download full Twitch VODs (past streams)?</h3>
+        <p>Technically yes for VODs that are publicly available, but they're often hours long and may exceed the free tier's 15-minute length cap. Pro users can download VODs of any length.</p>
+
+        <h3>What about subscriber-only clips?</h3>
+        <p>Subscriber-only content requires a Twitch login and can't be downloaded by Clip. Public clips work fine.</p>
+
+        <h3>Does the streamer get notified?</h3>
+        <p>No. Twitch doesn't notify creators when their clips are downloaded externally. That said, please credit creators when re-sharing their content.</p>
+
+        <h3>Will it work for old clips from inactive streamers?</h3>
+        <p>Yes, as long as the clip URL still loads on Twitch. Twitch keeps clips indefinitely unless the streamer or Twitch removes them.</p>
       </section>
     `,
   },
